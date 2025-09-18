@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Product;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -74,20 +72,20 @@ class ProductSeeder extends Seeder
             try {
                 $imageContents = file_get_contents($data['image_url']);
                 if ($imageContents === false) {
-                    throw new \Exception("Could not get contents from URL.");
+                    throw new \Exception('Could not get contents from URL.');
                 }
-                $imageName = Str::random(20) . '.jpg';
-                $imagePath = 'products/' . $imageName;
+                $imageName = Str::random(20).'.jpg';
+                $imagePath = 'products/'.$imageName;
                 Storage::disk('public')->put($imagePath, $imageContents);
-                Log::info('Image for ' . $data['name'] . ' saved to ' . $imagePath);
-                 Product::create([
+                Log::info('Image for '.$data['name'].' saved to '.$imagePath);
+                Product::create([
                     'name' => $data['name'],
                     'price' => $data['price'],
                     'description' => $data['name'],
                     'image' => $imagePath,
                 ]);
             } catch (\Exception $e) {
-                Log::error('Failed to download image for ' . $data['name'] . ' from ' . $data['image_url'] . '. Error: ' . $e->getMessage());
+                Log::error('Failed to download image for '.$data['name'].' from '.$data['image_url'].'. Error: '.$e->getMessage());
                 Product::create([
                     'name' => $data['name'],
                     'price' => $data['price'],

@@ -16,6 +16,10 @@ class ProductsTable
     {
         return $table
             ->columns([
+                ImageColumn::make('image')
+                    ->label('Gambar Produk')
+                    ->disk('public')
+                    ->circular(),
                 TextColumn::make('name')
                     ->label('Nama Produk')
                     ->sortable()
@@ -23,12 +27,8 @@ class ProductsTable
                     ->searchable(),
                 TextColumn::make('price')
                     ->label('Harga Produk')
-                    ->formatStateUsing(fn($state) => formatRupiah($state))
+                    ->formatStateUsing(fn ($state) => formatRupiah($state))
                     ->sortable(),
-                ImageColumn::make('image')
-                    ->label('Gambar Produk')
-                    ->disk('public')
-                    ->circular(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

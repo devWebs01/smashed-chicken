@@ -31,7 +31,7 @@ class ProductForm
                             ->label('Gambar Produk')
                             ->image()
                             ->columnSpanFull()
-                    ->disk('public'),
+                            ->disk('public'),
 
                     ])
                     ->columns(2)
