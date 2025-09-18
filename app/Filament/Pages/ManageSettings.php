@@ -46,7 +46,7 @@ class ManageSettings extends Page implements HasForms
                         ->label('Logo Aplikasi')
                         ->disk('public')
                         ->image()
-                        ->directory('setting'),
+                    ,
 
                     Textarea::make('data.address')
                         ->label('Alamat')
