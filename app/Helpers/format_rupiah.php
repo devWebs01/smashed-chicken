@@ -15,7 +15,7 @@ if (! function_exists('formatRupiah')) {
         $hasil = number_format($angka, 0, ',', '.');
 
         return $withPrefix
-            ? 'Rp ' . $hasil
+            ? 'Rp '.$hasil
             : $hasil;
     }
 }

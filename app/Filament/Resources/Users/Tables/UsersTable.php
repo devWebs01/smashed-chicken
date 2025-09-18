@@ -22,17 +22,17 @@ class UsersTable
                     ->label('Email')
                     ->searchable(),
                 TextColumn::make('email_verified_at')
-                ->label('Terverifikasi')
+                    ->label('Terverifikasi')
                     // ->hidden()
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('created_at')
-                ->label('Dibuat')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                ->label('Diperbarui')
+                    ->label('Diperbarui')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

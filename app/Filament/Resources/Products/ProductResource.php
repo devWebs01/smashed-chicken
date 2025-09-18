@@ -27,6 +27,12 @@ class ProductResource extends Resource
         return ProductForm::configure($schema);
     }
 
+    protected static ?string $navigationLabel = 'Produk';
+
+    protected static ?string $heading = 'Manajemen Produk';
+
+    protected static ?string $title = 'Manajemen Produk';
+
     public static function table(Table $table): Table
     {
         return ProductsTable::configure($table);

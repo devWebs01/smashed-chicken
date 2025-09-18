@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
@@ -16,11 +17,18 @@ class ProductsTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nama Produk')
+                    ->sortable()
+                    ->limit(25)
                     ->searchable(),
                 TextColumn::make('price')
-                    ->money()
+                    ->label('Harga Produk')
+                    ->formatStateUsing(fn($state) => formatRupiah($state))
                     ->sortable(),
-                ImageColumn::make('image'),
+                ImageColumn::make('image')
+                    ->label('Gambar Produk')
+                    ->disk('public')
+                    ->circular(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -34,7 +42,8 @@ class ProductsTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->button(),
+                DeleteAction::make()->button(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
