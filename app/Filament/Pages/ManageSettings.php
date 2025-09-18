@@ -43,12 +43,13 @@ class ManageSettings extends Page implements HasForms
                         ->required(),
 
                     FileUpload::make('data.logo')
+                        ->required()
                         ->label('Logo Aplikasi')
                         ->disk('public')
-                        ->image()
-                    ,
+                        ->image(),
 
                     Textarea::make('data.address')
+                        ->required()
                         ->label('Alamat')
                         ->columnSpanFull()
                         ->rows(5),
