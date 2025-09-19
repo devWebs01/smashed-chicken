@@ -65,6 +65,7 @@ class AdminPanelProvider extends PanelProvider
                         // 'User' => 'user@testing.com',
                     ]),
             ])
-            ->sidebarCollapsibleOnDesktop();
+            ->sidebarCollapsibleOnDesktop()
+            ->viteTheme('resources/css/filament/admin/theme.css');
     }
 }
