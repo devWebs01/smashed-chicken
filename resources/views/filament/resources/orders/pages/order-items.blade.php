@@ -73,15 +73,9 @@ $totalAmount = computed(function () {
 
 $saveDraft = function () {
     DB::transaction(function () {
-        $order = Order::create([
-            'user_id' => auth()->id(),
-            'status' => 'draft',
-            'total_price' => $this->totalAmount,
-        ]);
-
         foreach ($this->currentOrder as $item) {
             OrderItem::create([
-                'order_id' => $order->id,
+                'order_id' => $this->record->id,
                 'product_id' => $item->id,
                 'quantity' => $item->quantity,
                 'price' => $item->price,
@@ -89,7 +83,7 @@ $saveDraft = function () {
             ]);
         }
 
-        return redirect()->route('filament.admin.resources.orders.show', $order);
+        return redirect()->route('filament.admin.resources.orders.show', $this->record);
     });
 };
 
@@ -99,15 +93,9 @@ $printBill = function () {
 
 $openOrder = function () {
     DB::transaction(function () {
-        $order = Order::create([
-            'user_id' => auth()->id(),
-            'status' => 'open',
-            'total_price' => $this->totalAmount,
-        ]);
-
         foreach ($this->currentOrder as $item) {
             OrderItem::create([
-                'order_id' => $order->id,
+                'order_id' => $this->record->id,
                 'product_id' => $item->id,
                 'quantity' => $item->quantity,
                 'price' => $item->price,
@@ -115,7 +103,7 @@ $openOrder = function () {
             ]);
         }
 
-        return redirect()->route('filament.admin.resources.orders.show', $order);
+        return redirect()->route('filament.admin.resources.orders.view', ['record' => $this->record->id]);
     });
 };
 
@@ -182,7 +170,7 @@ $openOrder = function () {
                     </div>
 
                     {{-- Pagination --}}
-                    <x-filament::pagination :paginator="$this->menuItems" :extreme-links="true" />
+                    <x-filament::pagination :paginator="$this->menuItems" :extreme-links="true" class="mt-6" />
 
                 </x-filament::section>
             </div>

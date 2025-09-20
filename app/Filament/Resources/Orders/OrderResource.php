@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders;
 use App\Filament\Resources\Orders\Pages\CreateOrder;
 use App\Filament\Resources\Orders\Pages\EditOrder;
 use App\Filament\Resources\Orders\Pages\ListOrders;
+use App\Filament\Resources\Orders\Pages\OrderItems;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Filament\Resources\Orders\Schemas\OrderForm;
 use App\Filament\Resources\Orders\Schemas\OrderInfolist;
@@ -25,19 +26,17 @@ class OrderResource extends Resource
 
     protected static ?string $navigationLabel = 'Pesanan';
 
-    protected static ?string $heading = 'Manajemen Pesanan';
-
     protected static ?string $title = 'Manajemen Pesanan';
 
-    public static function form(Schema $schema): Schema
-    {
-        return OrderForm::configure($schema);
-    }
+    // public static function form(Schema $schema): Schema
+    // {
+    //     return OrderForm::configure($schema);
+    // }
 
-    public static function infolist(Schema $schema): Schema
-    {
-        return OrderInfolist::configure($schema);
-    }
+    // public static function infolist(Schema $schema): Schema
+    // {
+    //     return OrderInfolist::configure($schema);
+    // }
 
     public static function table(Table $table): Table
     {
@@ -58,6 +57,7 @@ class OrderResource extends Resource
             'create' => CreateOrder::route('/create'),
             'view' => ViewOrder::route('/{record}'),
             'edit' => EditOrder::route('/{record}/edit'),
+            'items' => OrderItems::route('/{record}/items'),
         ];
     }
 }

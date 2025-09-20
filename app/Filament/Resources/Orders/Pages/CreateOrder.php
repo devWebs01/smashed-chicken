@@ -9,5 +9,7 @@ class CreateOrder extends CreateRecord
 {
     protected static string $resource = OrderResource::class;
 
-    protected string $view = 'filament.resources.order-resource.pages.create-order';
+    protected string $view = 'filament.resources.orders.pages.create-order';
+
+    protected ?string $heading = 'Pesanan';
 }

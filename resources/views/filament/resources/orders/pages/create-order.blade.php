@@ -30,7 +30,7 @@ $createOrder = function () {
         ]),
     );
 
-    return redirect()->route('filament.admin.resources.orders.view', $record);
+    return redirect()->route('filament.admin.resources.orders.items', ['record' => $record->id]);
 };
 
 ?>
@@ -39,14 +39,6 @@ $createOrder = function () {
     @volt
         <div>
             <x-filament::section>
-                <x-slot name="heading">
-                    <header class="mb-6">
-                        <h1 class="text-2xl font-semibold">Buat Pesanan Baru</h1>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Isi data customer dan detail pesanan
-                        </p>
-                    </header>
-                </x-slot>
 
                 <form wire:submit.prevent="createOrder" class="space-y-6">
                     {{-- Nama Customer --}}
