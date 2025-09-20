@@ -12,4 +12,9 @@ class Dashboard extends BaseDashboard
         OrdersStatsOverview::class,
         OrdersPerDayChart::class,
     ];
+
+    public function getColumns(): int|array
+    {
+        return 2;
+    }
 }

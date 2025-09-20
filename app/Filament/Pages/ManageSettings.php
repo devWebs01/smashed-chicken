@@ -23,7 +23,7 @@ class ManageSettings extends Page implements HasForms
 
     protected string $view = 'filament.pages.manage-settings';
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-window';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cog-8-tooth';
 
     protected static ?string $navigationLabel = 'Pengaturan';
 

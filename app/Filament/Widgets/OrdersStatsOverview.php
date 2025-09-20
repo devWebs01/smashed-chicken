@@ -8,6 +8,9 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class OrdersStatsOverview extends BaseWidget
 {
+    protected int|string|array $columnSpan = 'full';
+
+
     protected function getCards(): array
     {
         $today = now()->startOfDay();
@@ -22,10 +25,12 @@ class OrdersStatsOverview extends BaseWidget
             Stat::make('Pesanan Hari Ini', $todayCount)
                 ->description($diff >= 0 ? "+$diff" : "$diff")
                 ->descriptionIcon($diff >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
-                ->color($diff >= 0 ? 'success' : 'danger')
-                ->columnSpan(2),
+                ->color($diff >= 0 ? 'success' : 'danger'),
             Stat::make('Kenaikan (%)', $trend.'%')
                 ->description('Dibanding kemarin'),
+            Stat::make('Total Pesanan', Order::count())
+                ->description('Total keseluruhan')
+                ->color('gray'),
         ];
     }
 }

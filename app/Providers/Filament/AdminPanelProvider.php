@@ -2,8 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\OrdersPerDayChart;
-use App\Filament\Widgets\OrdersStatsOverview;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -43,8 +41,6 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
-                OrdersPerDayChart::class,
-                OrdersStatsOverview::class,
             ])
             ->middleware([
                 EncryptCookies::class,
