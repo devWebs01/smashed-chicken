@@ -20,7 +20,7 @@ $menuItems = computed(function () {
         $query->where('name', 'like', '%' . $this->search . '%');
     }
 
-    return $query->paginate(5);
+    return $query->paginate(6);
 });
 
 $updatingSearch = function () {
