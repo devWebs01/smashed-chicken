@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ProductResource extends Resource
 {
@@ -29,9 +30,7 @@ class ProductResource extends Resource
 
     protected static ?string $navigationLabel = 'Produk';
 
-    protected static ?string $heading = 'Manajemen Produk';
-
-    protected static ?string $title = 'Manajemen Produk';
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Data';
 
     public static function table(Table $table): Table
     {

@@ -15,6 +15,7 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use UnitEnum;
 
 class ManageSettings extends Page implements HasForms
 {
@@ -22,11 +23,13 @@ class ManageSettings extends Page implements HasForms
 
     protected string $view = 'filament.pages.manage-settings';
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-window';
 
     protected static ?string $navigationLabel = 'Pengaturan';
 
     protected static ?string $title = 'Pengaturan';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Data';
 
     public ?array $data = [];
 

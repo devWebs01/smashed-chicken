@@ -12,6 +12,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class UserResource extends Resource
 {
@@ -23,9 +24,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationLabel = 'Pengguna';
 
-    protected static ?string $heading = 'Manajemen Pengguna';
-
-    protected static ?string $title = 'Manajemen Pengguna';
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Data';
 
     public static function form(Schema $schema): Schema
     {

@@ -10,6 +10,7 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewOrder extends ViewRecord
 {
     protected ?string $heading = 'Cetak Pesanan';
+
     protected static string $resource = OrderResource::class;
 
     protected string $view = 'filament.resources.orders.pages.view-order';

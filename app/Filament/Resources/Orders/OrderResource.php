@@ -12,6 +12,7 @@ use App\Models\Order;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class OrderResource extends Resource
 {
@@ -23,7 +24,7 @@ class OrderResource extends Resource
 
     protected static ?string $navigationLabel = 'Pesanan';
 
-    protected static ?string $title = 'Manajemen Pesanan';
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Pesanan';
 
     public static function table(Table $table): Table
     {

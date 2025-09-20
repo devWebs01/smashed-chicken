@@ -9,6 +9,7 @@ use Filament\Resources\Pages\ListRecords;
 class ListOrders extends ListRecords
 {
     protected ?string $heading = 'Pesanan';
+
     protected static string $resource = OrderResource::class;
 
     protected function getHeaderActions(): array
