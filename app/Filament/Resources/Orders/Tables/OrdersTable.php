@@ -22,25 +22,25 @@ class OrdersTable
                     ->sortable()
                     ->limit(25)
                     ->searchable(),
-                TextColumn::make('customer_phone')
-                    ->label('Telepon Customer')
-                    ->sortable()
-                    ->limit(25)
-                    ->searchable(),
+                TextColumn::make('total_price')
+                    ->label('Total Harga')
+                    ->formatStateUsing(fn ($state) => formatRupiah($state))
+                    ->sortable(),
                 BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
                         'warning' => 'pending',
-                        'info'    => 'processing',
+                        'info' => 'processing',
                         'success' => 'completed',
-                        'danger'  => 'cancelled',
-                        'gray'    => 'draft',
+                        'danger' => 'cancelled',
+                        'gray' => 'draft',
                     ])
-                    ->formatStateUsing(fn($state) => match ($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
                         'pending' => 'Tertunda',
                         'processing' => 'Sedang Diproses',
                         'completed' => 'Selesai',
                         'cancelled' => 'Dibatalkan',
+                        'confirm' => 'Dikonfirmasi',
                         'draft' => 'Draf',
                         default => $state,
                     })
@@ -54,7 +54,7 @@ class OrdersTable
                         'warning' => 'takeaway',
                         'success' => 'delivery',
                     ])
-                    ->formatStateUsing(fn($state) => match ($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
                         'dine_in' => 'Makan di Tempat',
                         'takeaway' => 'Bawa Pulang',
                         'delivery' => 'Delivery',
@@ -67,8 +67,8 @@ class OrdersTable
                 //
             ])
             ->recordActions([
-                ViewAction::make()->button(),
-                EditAction::make()->button(),
+                EditAction::make()->button()->label('Lihat'),
+                ViewAction::make()->button()->label('Cetak'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

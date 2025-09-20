@@ -120,13 +120,13 @@ class ProductSeeder extends Seeder
                     // fallback image default
                     $fallbackUrl = 'https://i.gojekapi.com/darkroom/gofood-id/v2/images/uploads/c595bfb0-9cd4-4a99-ba72-0058e6a2f068_Image-+-Badge.png';
                     $imageContents = file_get_contents($fallbackUrl);
-                    Log::warning('Fallback image used for ' . $data['name']);
+                    Log::warning('Fallback image used for '.$data['name']);
                 }
 
-                $imageName = Str::random(20) . '.jpg';
-                $imagePath = 'products/' . $imageName;
+                $imageName = Str::random(20).'.jpg';
+                $imagePath = 'products/'.$imageName;
                 Storage::disk('public')->put($imagePath, $imageContents);
-                Log::info('Image for ' . $data['name'] . ' saved to ' . $imagePath);
+                Log::info('Image for '.$data['name'].' saved to '.$imagePath);
 
                 Product::create([
                     'name' => $data['name'],
@@ -135,7 +135,7 @@ class ProductSeeder extends Seeder
                     'image' => $imagePath,
                 ]);
             } catch (\Exception $e) {
-                Log::error('Failed to download image for ' . $data['name'] . ' from ' . $data['image_url'] . '. Error: ' . $e->getMessage());
+                Log::error('Failed to download image for '.$data['name'].' from '.$data['image_url'].'. Error: '.$e->getMessage());
                 Product::create([
                     'name' => $data['name'],
                     'price' => $data['price'],

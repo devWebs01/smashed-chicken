@@ -73,6 +73,12 @@ $totalAmount = computed(function () {
 
 $saveDraft = function () {
     DB::transaction(function () {
+        $this->record->update([
+            'status' => 'confirm',
+            'total_price' => $this->totalAmount,
+            'payment_method' => '',
+        ]);
+
         foreach ($this->currentOrder as $item) {
             OrderItem::create([
                 'order_id' => $this->record->id,
@@ -83,16 +89,22 @@ $saveDraft = function () {
             ]);
         }
 
-        return redirect()->route('filament.admin.resources.orders.show', $this->record);
+        return redirect()->route('filament.admin.resources.orders.edit', ['record' => $this->record->id]);
     });
 };
 
 $printBill = function () {
-    return redirect()->route('orders.print', $this->record);
+    return redirect()->route('filament.admin.resources.orders.view', $this->record);
 };
 
-$openOrder = function () {
+$confirmOrder = function () {
     DB::transaction(function () {
+        $this->record->update([
+            'status' => 'confirm',
+            'total_price' => $this->totalAmount,
+            'payment_method' => '',
+        ]);
+
         foreach ($this->currentOrder as $item) {
             OrderItem::create([
                 'order_id' => $this->record->id,
@@ -103,7 +115,7 @@ $openOrder = function () {
             ]);
         }
 
-        return redirect()->route('filament.admin.resources.orders.view', ['record' => $this->record->id]);
+        return redirect()->route('filament.admin.resources.orders.edit', ['record' => $this->record->id]);
     });
 };
 
@@ -222,8 +234,8 @@ $openOrder = function () {
                             <span class="text-primary-600">{{ formatRupiah($this->totalAmount) }}</span>
                         </div>
                         <x-filament::button icon="heroicon-o-paper-airplane" color="primary" class="w-full"
-                            :disabled="$currentOrder->isEmpty()" wire:click="openOrder">
-                            Kirim Pesanan ke Dapur
+                            :disabled="$currentOrder->isEmpty()" wire:click="confirmOrder">
+                            Konfirmsi Pesanan
                         </x-filament::button>
                         <div class="grid grid-cols-2 gap-3">
                             <x-filament::button icon="heroicon-o-archive-box-arrow-down" color="warning" outlined
