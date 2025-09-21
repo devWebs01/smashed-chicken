@@ -8,14 +8,15 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListOrders extends ListRecords
 {
-    protected ?string $heading = 'Pesanan';
+    protected ?string $heading = 'DaftarPesanan';
 
     protected static string $resource = OrderResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Buat Pesanan'),
         ];
     }
 }

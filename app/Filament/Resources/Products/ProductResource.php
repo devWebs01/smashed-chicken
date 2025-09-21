@@ -22,14 +22,14 @@ class ProductResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name, description';
 
+    protected static ?string $navigationLabel = 'Produk';
+    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Data';
+
     public static function form(Schema $schema): Schema
     {
         return ProductForm::configure($schema);
     }
 
-    protected static ?string $navigationLabel = 'Produk';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Manajemen Data';
 
     public static function table(Table $table): Table
     {

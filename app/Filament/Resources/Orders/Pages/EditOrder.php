@@ -9,7 +9,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditOrder extends EditRecord
 {
-    protected ?string $heading = 'Pesanan';
+    protected ?string $heading = 'Ubah Pesanan';
 
     protected static string $resource = OrderResource::class;
 
@@ -18,7 +18,7 @@ class EditOrder extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            ViewAction::make(),
+            ViewAction::make()->label('Print')->color('info'),
             DeleteAction::make(),
         ];
     }

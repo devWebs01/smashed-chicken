@@ -11,5 +11,5 @@ class CreateOrder extends CreateRecord
 
     protected string $view = 'filament.resources.orders.pages.create-order';
 
-    protected ?string $heading = 'Pesanan';
+    protected ?string $heading = 'Buat Pesanan';
 }

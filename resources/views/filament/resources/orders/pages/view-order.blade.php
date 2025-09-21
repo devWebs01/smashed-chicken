@@ -1,12 +1,13 @@
 <?php
 
 use function Livewire\Volt\state;
-use App\Models\Order;
+use App\Models\{Order, Setting};
 
 state([
     'record' => fn() => request()->route('record'),
     'order' => fn() => Order::with(['orderItems'])->findOrFail(request()->route('record')),
     'status' => fn() => $order->status ?? 'draft',
+    'setting' => fn() => Setting::first(),
 ]);
 ?>
 
@@ -25,8 +26,8 @@ state([
                                 <x-heroicon-s-bolt class="w-8 h-8 text-white" />
                             </div>
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Restaurant App</h2>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">123 Culinary Lane, Food City</p>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $setting->name }}</h2>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $setting->address }}</p>
                             </div>
                         </div>
                         <div class="text-right">
