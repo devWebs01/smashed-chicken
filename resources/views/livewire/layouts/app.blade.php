@@ -22,7 +22,7 @@
     </head>
 
     <body>
-        <div class="min-h-screen bg-white overflow-hidden">
+        <div id="top" class="min-h-screen bg-white overflow-hidden">
             <!-- Home Page Section -->
             <div class="bg-orange-50 w-full">
                 <!-- Header -->
@@ -49,7 +49,7 @@
                     <x-nav></x-nav>
 
                     <div class="hidden md:flex items-center gap-4">
-                        <img class="w-12 h-12 rounded-full" src="https://placehold.co/50x50" alt="Profile" />
+                        <img class="w-12 h-12 object-cover rounded-full" src="{{ Storage::url($setting->logo) }}" alt="Profile" />
                     </div>
                 </header>
             </div>

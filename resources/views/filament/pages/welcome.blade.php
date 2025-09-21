@@ -1,17 +1,16 @@
 <?php
-use function Livewire\Volt\{state, mount};
+use function Livewire\Volt\{state, mount, usesPagination, with};
 use App\Models\Product;
 
-state(['favoriteProducts', 'allProducts']);
+usesPagination();
+
+state(['favoriteProducts']);
 
 mount(function () {
-    $this->favoriteProducts = Product::withCount('orderItems')
-        ->orderByDesc('order_items_count')
-        ->limit(3)
-        ->get();
-
-    $this->allProducts = Product::inRandomOrder()->limit(6)->get();
+    $this->favoriteProducts = Product::withCount('orderItems')->orderByDesc('order_items_count')->limit(3)->get();
 });
+
+with(fn() => ['allProducts' => Product::inRandomOrder()->paginate(6)]);
 
 ?>
 <x-app>
@@ -30,18 +29,17 @@ mount(function () {
                             <span class="text-zinc-800">Anda!</span>
                         </h1>
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <button
-                                class="w-64 h-12 bg-orange-500 rounded-full shadow-md text-white text-base font-bold tracking-tight">
-                                Pesan Sekarang
-                            </button>
-                            <button
-                                class="w-64 h-12 rounded-full shadow-md border-2 border-orange-600 text-orange-600 text-base font-bold tracking-tight">
-                                Lacak Pesanan
-                            </button>
+                            <a href="#menus">
+                                <button
+                                    class="w-64 h-12 bg-orange-500 rounded-full shadow-md text-white text-base font-bold tracking-tight">
+                                    Pesan Sekarang
+                                </button>
+                            </a>
+
                         </div>
                     </div>
                     <div class="flex justify-center items-start">
-                        <img class="w-full max-w-md lg:max-w-lg h-auto" src="https://placehold.co/500x500"
+                        <img class="w-full max-w-md lg:max-w-lg h-auto" src="{{ asset('assets/images/hero.png') }}"
                             alt="Ayam Geprek" />
                     </div>
                 </div>
@@ -156,7 +154,7 @@ mount(function () {
             </div>
 
             <!-- Menu Page Section -->
-            <div class="w-full bg-white py-10 md:py-20 px-4 md:px-10 lg:px-24">
+            <div id="menus" class="w-full bg-white py-10 md:py-20 px-4 md:px-10 lg:px-24">
                 <div class="flex flex-col md:flex-row items-center justify-between gap-5 mb-20 text-center md:text-left">
                     <div>
                         <h2 class="text-4xl md:text-5xl font-bold leading-tight">
@@ -168,8 +166,7 @@ mount(function () {
                             Pilih Menu Ayam Geprek Favoritmu, Pedasnya Bikin Nagih!
                         </p>
                     </div>
-                    <button class="px-6 py-3 bg-orange-500 rounded-full text-white text-lg font-semibold shadow-md">Lihat
-                        Semua</button>
+                    <button class="px-6 py-3 bg-orange-500 rounded-full text-white text-lg font-semibold shadow-md">HOT!!!</button>
                 </div>
 
                 <!-- Menu Items -->
@@ -180,7 +177,7 @@ mount(function () {
                         <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
                             <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
                                 src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" />
-                                
+
                             <div class="mt-10 text-center">
                                 <h3 class="text-zinc-800 text-xl font-medium leading-tight">
                                     <span class="text-orange-600"> {{ $product->name }} </span>
@@ -196,6 +193,9 @@ mount(function () {
                             </div>
                         </div>
                     @endforeach
+                </div>
+                <div class="mx-auto w-full mt-8">
+                    {{ $allProducts->links(data: ['scrollTo' => false]) }}
 
                 </div>
             </div>
