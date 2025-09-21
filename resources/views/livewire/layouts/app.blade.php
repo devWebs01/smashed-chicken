@@ -64,7 +64,7 @@
                 class="w-full bg-orange-50 py-10 md:py-20 px-4 md:px-10 lg:px-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 text-center md:text-left">
                 <div class="flex flex-col items-center md:items-start gap-7">
                     <p class="text-2xl font-wendy whitespace-nowrap">
-                        <span class="text-orange-600">{{ $setting->name }} </span>
+                        <span class="text-orange-600 text-wrap">{{ $setting->name }} </span>
                     </p>
                     <p class="text-neutral-400 text-base font-normal">Ayam Geprek Mother ©2023 Semua Hak Dilindungi</p>
                     <p class="text-neutral-400 text-base font-normal">Oleh - Piyush Prajapat</p>
