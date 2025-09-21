@@ -10,7 +10,6 @@ class OrdersStatsOverview extends BaseWidget
 {
     protected int|string|array $columnSpan = 'full';
 
-
     protected function getCards(): array
     {
         $today = now()->startOfDay();
