@@ -10,5 +10,6 @@ class Setting extends Model
         'name',
         'logo',
         'address',
+        'phone'
     ];
 }

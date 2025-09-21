@@ -49,6 +49,11 @@ class ManageSettings extends Page implements HasForms
                         ->label('Nama Aplikasi')
                         ->required(),
 
+                    TextInput::make('data.phone')
+                        ->numeric()
+                        ->required()
+                        ->label('Telepon'),
+
                     FileUpload::make('data.logo')
                         ->required()
                         ->label('Logo Aplikasi')
@@ -61,6 +66,8 @@ class ManageSettings extends Page implements HasForms
                         ->label('Alamat')
                         ->columnSpanFull()
                         ->rows(5),
+
+
                 ])
                 ->columns(1)
                 ->columnSpanFull(),

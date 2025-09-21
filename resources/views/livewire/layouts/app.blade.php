@@ -49,7 +49,8 @@
                     <x-nav></x-nav>
 
                     <div class="hidden md:flex items-center gap-4">
-                        <img class="w-12 h-12 object-cover rounded-full" src="{{ Storage::url($setting->logo) }}" alt="Profile" />
+                        <img class="w-12 h-12 object-cover rounded-full" src="{{ Storage::url($setting->logo) }}"
+                            alt="Profile" />
                     </div>
                 </header>
             </div>
@@ -87,10 +88,15 @@
 
                 <div class="flex flex-col items-center md:items-start gap-3">
                     <h4 class="text-orange-600 text-2xl font-semibold">Kontak</h4>
-                    <p class="text-neutral-400 text-base font-normal">+123456789</p>
-                    <p class="text-neutral-400 text-base font-normal">Jelajahi</p>
-                    <p class="text-neutral-400 text-base font-normal">Info@Fooddash.com</p>
-                    <p class="text-neutral-400 text-base font-normal">Jl. Contoh No. 12, Jakarta, Indonesia</p>
+                    <p class="text-neutral-400 text-base font-normal">
+                        {{ $setting->phone }}
+                    </p>
+                    <p class="text-neutral-400 text-base font-normal">
+                        {{ $setting->address }}
+                    </p>
+                    <p class="text-neutral-400 text-base font-normal">
+                        <a href="/admin/login">Admin</a>
+                    </p>
 
                 </div>
             </footer>
