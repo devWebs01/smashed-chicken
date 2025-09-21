@@ -1,5 +1,20 @@
-<x-app>
+<?php
+use function Livewire\Volt\{state, mount};
+use App\Models\Product;
 
+state(['favoriteProducts', 'allProducts']);
+
+mount(function () {
+    $this->favoriteProducts = Product::withCount('orderItems')
+        ->orderByDesc('order_items_count')
+        ->limit(3)
+        ->get();
+
+    $this->allProducts = Product::inRandomOrder()->limit(6)->get();
+});
+
+?>
+<x-app>
     @volt
         <div>
             <div class="bg-orange-50 w-full">
@@ -75,7 +90,7 @@
                         <span class="text-orange-600">Jadi <br />Pilihan Terbaik </span>
                     </h2>
                     <p class="text-neutral-400 text-lg md:text-xl font-normal max-w-md">
-                        Kami hadir  dengan komitmen menyajikan ayam geprek pedas nikmat yang tak terlupakan.
+                        Kami hadir dengan komitmen menyajikan ayam geprek pedas nikmat yang tak terlupakan.
                     </p>
                 </div>
 
@@ -99,7 +114,7 @@
                     <div class="flex flex-col items-center text-center gap-4">
                         <img class="w-20 h-20 object-cover" src="{{ asset('assets/images/drumsticks.png') }}"
                             alt="Komunitas" />
-                        <h3 class="text-zinc-800 text-2xl font-bold leading-tight">Komunitas Ayam Geprek  </h3>
+                        <h3 class="text-zinc-800 text-2xl font-bold leading-tight">Komunitas Ayam Geprek </h3>
                         <p class="text-neutral-400 text-base font-medium leading-tight">
                             Bagian dari keluarga besar pecinta ayam geprek .
                         </p>
@@ -125,39 +140,18 @@
 
                 <!-- Food Items -->
                 <div class="flex flex-col md:flex-row justify-center lg:justify-between items-center gap-10">
-                    <div class="flex flex-col items-center gap-4">
-                        <div class="relative w-64 h-64">
-                            <img class="absolute inset-0 m-auto w-48 h-48 object-cover" src="https://placehold.co/250x250"
-                                alt="Ayam Geprek Original" />
-                            <div
-                                class="absolute inset-0 m-auto w-60 h-60 rounded-full border-4 border-dashed border-orange-600">
+                    @foreach ($favoriteProducts as $product)
+                        <div class="flex flex-col items-center gap-4">
+                            <div class="relative w-64 h-64">
+                                <img class="absolute inset-0 m-auto w-48 h-48 object-cover rounded-full shadow-md"
+                                    src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" />
+                                <div
+                                    class="absolute inset-0 m-auto w-60 h-60 rounded-full border-4 border-dashed border-orange-600">
+                                </div>
                             </div>
+                            <h3 class="text-zinc-800 text-xl font-semibold text-center">{{ $product->name }}</h3>
                         </div>
-                        <h3 class="text-zinc-800 text-xl font-semibold text-center">Ayam Geprek Original</h3>
-                        <p class="text-orange-600 text-xl font-medium text-center">Pesan Sekarang &gt;</p>
-                    </div>
-                    <div class="flex flex-col items-center gap-4">
-                        <div class="relative w-64 h-64">
-                            <img class="absolute inset-0 m-auto w-48 h-48 object-cover" src="https://placehold.co/250x250"
-                                alt="Ayam Geprek Mozzarella" />
-                            <div
-                                class="absolute inset-0 m-auto w-60 h-60 rounded-full border-4 border-dashed border-orange-600">
-                            </div>
-                        </div>
-                        <h3 class="text-zinc-800 text-xl font-semibold text-center">Ayam Geprek Mozzarella</h3>
-                        <p class="text-orange-600 text-xl font-medium text-center">Pesan Sekarang &gt;</p>
-                    </div>
-                    <div class="flex flex-col items-center gap-4">
-                        <div class="relative w-64 h-64">
-                            <img class="absolute inset-0 m-auto w-48 h-48 object-cover" src="https://placehold.co/250x250"
-                                alt="Ayam Geprek Sambal Matah" />
-                            <div
-                                class="absolute inset-0 m-auto w-60 h-60 rounded-full border-4 border-dashed border-orange-600">
-                            </div>
-                        </div>
-                        <h3 class="text-zinc-800 text-xl font-semibold text-center">Ayam Geprek Sambal Matah</h3>
-                        <p class="text-orange-600 text-xl font-medium text-center">Pesan Sekarang &gt;</p>
-                    </div>
+                    @endforeach
                 </div>
             </div>
 
@@ -181,125 +175,27 @@
                 <!-- Menu Items -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16">
 
-                    <!-- Item 1 -->
-                    <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
-                        <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
-                            src="https://placehold.co/200x200" alt="Ayam Geprek Original" />
-                        <div class="mt-10 text-center">
-                            <h3 class="text-zinc-800 text-xl font-medium leading-tight">
-                                <span class="text-orange-600">Ayam Geprek <br /></span>
-                                <span>Original</span>
-                            </h3>
-                            <div class="flex items-center justify-center gap-1 my-2">
-                                <p class="text-zinc-800 text-3xl font-medium">₹250</p>
-                            </div>
-                            <div class="flex items-center justify-between w-full mt-5">
-
-                                <button class="px-5 py-2 bg-orange-500 rounded-full text-white text-sm font-semibold">Beli
-                                    Sekarang</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Item 1 -->
-                    <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
-                        <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
-                            src="https://placehold.co/200x200" alt="Ayam Geprek Original" />
-                        <div class="mt-10 text-center">
-                            <h3 class="text-zinc-800 text-xl font-medium leading-tight">
-                                <span class="text-orange-600">Ayam Geprek <br /></span>
-                                <span>Original</span>
-                            </h3>
-                            <div class="flex items-center justify-center gap-1 my-2">
-                                <p class="text-zinc-800 text-3xl font-medium">₹250</p>
-                            </div>
-                            <div class="flex items-center justify-between w-full mt-5">
-
-                                <button class="px-5 py-2 bg-orange-500 rounded-full text-white text-sm font-semibold">Beli
-                                    Sekarang</button>
+                    @foreach ($allProducts as $product)
+                        <!-- Item 1 -->
+                        <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
+                            <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
+                                src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" />
+                                
+                            <div class="mt-10 text-center">
+                                <h3 class="text-zinc-800 text-xl font-medium leading-tight">
+                                    <span class="text-orange-600"> {{ $product->name }} </span>
+                                </h3>
+                                <div class="flex items-center justify-center gap-1 my-2">
+                                    <p class="text-zinc-800 text-3xl font-medium">{{ formatRupiah($product->price) }}</p>
+                                </div>
+                                <div class="flex mx-auto items-center justify-between w-full mt-5">
+                                    <button
+                                        class="px-5 mx-auto py-2 bg-orange-500 rounded-full text-white text-sm font-semibold">Beli
+                                        Sekarang</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Item 1 -->
-                    <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
-                        <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
-                            src="https://placehold.co/200x200" alt="Ayam Geprek Original" />
-                        <div class="mt-10 text-center">
-                            <h3 class="text-zinc-800 text-xl font-medium leading-tight">
-                                <span class="text-orange-600">Ayam Geprek <br /></span>
-                                <span>Original</span>
-                            </h3>
-                            <div class="flex items-center justify-center gap-1 my-2">
-                                <p class="text-zinc-800 text-3xl font-medium">₹250</p>
-                            </div>
-                            <div class="flex items-center justify-between w-full mt-5">
-
-                                <button class="px-5 py-2 bg-orange-500 rounded-full text-white text-sm font-semibold">Beli
-                                    Sekarang</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Item 1 -->
-                    <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
-                        <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
-                            src="https://placehold.co/200x200" alt="Ayam Geprek Original" />
-                        <div class="mt-10 text-center">
-                            <h3 class="text-zinc-800 text-xl font-medium leading-tight">
-                                <span class="text-orange-600">Ayam Geprek <br /></span>
-                                <span>Original</span>
-                            </h3>
-                            <div class="flex items-center justify-center gap-1 my-2">
-                                <p class="text-zinc-800 text-3xl font-medium">₹250</p>
-                            </div>
-                            <div class="flex items-center justify-between w-full mt-5">
-
-                                <button class="px-5 py-2 bg-orange-500 rounded-full text-white text-sm font-semibold">Beli
-                                    Sekarang</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Item 1 -->
-                    <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
-                        <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
-                            src="https://placehold.co/200x200" alt="Ayam Geprek Original" />
-                        <div class="mt-10 text-center">
-                            <h3 class="text-zinc-800 text-xl font-medium leading-tight">
-                                <span class="text-orange-600">Ayam Geprek <br /></span>
-                                <span>Original</span>
-                            </h3>
-                            <div class="flex items-center justify-center gap-1 my-2">
-                                <p class="text-zinc-800 text-3xl font-medium">₹250</p>
-                            </div>
-                            <div class="flex items-center justify-between w-full mt-5">
-
-                                <button class="px-5 py-2 bg-orange-500 rounded-full text-white text-sm font-semibold">Beli
-                                    Sekarang</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Item 1 -->
-                    <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
-                        <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
-                            src="https://placehold.co/200x200" alt="Ayam Geprek Original" />
-                        <div class="mt-10 text-center">
-                            <h3 class="text-zinc-800 text-xl font-medium leading-tight">
-                                <span class="text-orange-600">Ayam Geprek <br /></span>
-                                <span>Original</span>
-                            </h3>
-                            <div class="flex items-center justify-center gap-1 my-2">
-                                <p class="text-zinc-800 text-3xl font-medium">₹250</p>
-                            </div>
-                            <div class="flex items-center justify-between w-full mt-5">
-
-                                <button class="px-5 py-2 bg-orange-500 rounded-full text-white text-sm font-semibold">Beli
-                                    Sekarang</button>
-                            </div>
-                        </div>
-                    </div>
+                    @endforeach
 
                 </div>
             </div>
@@ -308,7 +204,7 @@
             <div
                 class="max-w-5xl mb-10 py-10 md:py-20 px-4 md:px-10 lg:px-24 md:w-full mx-2 md:mx-auto flex flex-col items-center justify-center text-center bg-gradient-to-b from-orange-500 to-red-600 rounded-3xl p-10 text-white">
                 <h2 class="text-4xl md:text-5xl md:leading-[60px] font-semibold max-w-xl mt-5">
-                    Dapatkan Penawaran Spesial Ayam Geprek  Sekarang!
+                    Dapatkan Penawaran Spesial Ayam Geprek Sekarang!
                 </h2>
                 <p class="text-lg md:text-xl mt-4 max-w-2xl">
                     Jangan lewatkan diskon dan promo menarik untuk hidangan ayam geprek favoritmu. Pedasnya bikin nagih,
