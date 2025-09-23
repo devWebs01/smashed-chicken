@@ -76,9 +76,9 @@ class FonnteService
         $params = [
             'name' => $name,
             'device' => $phoneNumber,
-            'autoread' => 'false',  // string "false", bukan boolean
-            'personal' => 'true',   // string "true", bukan boolean
-            'group' => 'false',  // string "false"
+            'autoread' => false,   // pakai boolean
+            'personal' => true,
+            'group' => false,
         ];
 
         // Log request untuk memastikan payload benar

@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Setting extends Model
+class Device extends Model
 {
     protected $fillable = [
         'name',
-        'logo',
-        'address',
-        'phone',
+        'token',
+        'device',
+        'is_active',
     ];
 }

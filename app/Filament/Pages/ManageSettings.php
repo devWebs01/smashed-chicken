@@ -67,7 +67,6 @@ class ManageSettings extends Page implements HasForms
                         ->columnSpanFull()
                         ->rows(5),
 
-
                 ])
                 ->columns(1)
                 ->columnSpanFull(),
