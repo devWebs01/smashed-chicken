@@ -12,11 +12,10 @@ state([
     'devices' => [],
     'name' => '',
     'device' => '',
-    'loading' => false,
-    'error' => '',
-    'success' => '',
     'otp' => '',
+    'qrUrl' => null,
     'selectedToken' => null,
+    'selectedDevice' => null,
 ]);
 
 // ambil semua device saat mount
@@ -127,6 +126,68 @@ $confirmDelete = action(function () use ($fonnteService) {
     }
 });
 
+$activateDevice = action(function (string $device, string $token) use ($fonnteService) {
+    try {
+        // pakai API Get QR
+        $res = $fonnteService->requestQRActivation($device, $token);
+        // atau bisa custom method untuk endpoint qr, tergantung implementasi
+
+        if (!data_get($res, 'status')) {
+            $reason = data_get($res, 'error') ?? data_get($res, 'reason', 'Gagal generate QR Code');
+            Notification::make()->title('Gagal Connect')->body($reason)->danger()->send();
+            // kalau reason = "device already connect", mungkin bisa langsung reload dan notif sukses
+            if ($reason === 'device already connect') {
+                $this->reloadDevices($fonnteService);
+                Notification::make()->title('Device sudah terhubung')->success()->send();
+            }
+            return;
+        }
+
+        $this->qrUrl = data_get($res, 'data.url');
+        $this->selectedToken = $token;
+        $this->selectedDevice = $device;
+
+        // buka modal
+        $this->dispatch('open-modal', id: 'connectDevice');
+
+        // mulai polling status
+        $this->dispatch('start-device-polling');
+    } catch (\Throwable $e) {
+        Log::error('activateDevice error: ' . $e->getMessage());
+        Notification::make()->title('Internal error')->body($e->getMessage())->danger()->send();
+    }
+});
+
+$checkDeviceStatus = action(function () use ($fonnteService) {
+    // Cek status saat ini
+    if (!$this->selectedToken) {
+        Notification::make()->title('Tidak ada device dipilih')->danger()->send();
+        return;
+    }
+
+    try {
+        $res = $fonnteService->getDeviceProfile($this->selectedToken);
+
+        // dd($res);
+
+        if (data_get($res, 'data.device_status') === 'connect') {
+            // sukses, tutup modal
+            $this->dispatch('close-modal', id: 'connectDevice');
+
+            // notif
+            Notification::make()->title('Device Connected!')->body('WhatsApp berhasil terhubung.')->success()->send();
+
+            // redirect ke route filament.admin.resources.devices.index
+            return $this->redirectRoute('filament.admin.resources.devices.index');
+        } else {
+            Notification::make()->title('Belum terkoneksi')->body('Device belum berhasil connect. Silakan scan QR dan coba lagi.')->warning()->send();
+        }
+    } catch (\Throwable $e) {
+        Log::error('confirmConnect error: ' . $e->getMessage());
+        Notification::make()->title('Error')->body($e->getMessage())->danger()->send();
+    }
+});
+
 ?>
 
 <x-filament-panels::page>
@@ -204,41 +265,43 @@ $confirmDelete = action(function () use ($fonnteService) {
                                         </p>
                                     </td>
                                     <td class="p-4 border-b border-blue-gray-50">
-                                        <p
-                                            class="block font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900">
+                                        <x-filament::badge class="capitalize">
                                             {{ $device['status'] }}
-                                        </p>
+                                        </x-filament::badge>
+
                                     </td>
-                                    <td class="p-4 border-b border-blue-gray-50 space-y-3">
-                                        <x-filament::button size="xs" color="info"
-                                            wire:click="copyToClipboard('{{ $device['token'] }}')">
-                                            Copy Token
-                                        </x-filament::button>
+                                    <td class="p-4 border-b border-blue-gray-50">
+                                        <x-filament::dropdown>
+                                            <x-slot name="trigger">
+                                                <x-filament::button icon="heroicon-m-ellipsis-vertical" size="xs"
+                                                    outlined>
 
-                                        @if ($device['status'] === 'connect')
-                                            <x-filament::button size="xs" color="secondary"
-                                                wire:click="openSendMessageModal('{{ $device['token'] }}')">
-                                                Send Message
-                                            </x-filament::button>
+                                                </x-filament::button>
+                                            </x-slot>
 
-                                            <x-filament::button size="xs" color="danger"
-                                                wire:click="disconnectDevice('{{ data_get($device, 'token') ?? '' }}')"
-                                                class="disconnectButton" data-device-token="{{ $device['token'] }}">
-                                                Disconnect
-                                            </x-filament::button>
-                                        @else
-                                            <x-filament::button size="xs" color="success"
-                                                wire:click="activateDevice('{{ data_get($device, 'device') }}', '{{ data_get($device, 'token') ?? '' }}')"
-                                                class="connectButton">
-                                                Connect
-                                            </x-filament::button>
-                                        @endif
-
-                                        <!-- Tombol Delete (minta OTP) -->
-                                        <x-filament::button color="danger"
-                                            wire:click="requestDeleteOtp('{{ $device['token'] }}')" size="xs">
-                                            Delete
-                                        </x-filament::button>
+                                            <x-filament::dropdown.list>
+                                                <x-filament::dropdown.list.item
+                                                    wire:click="copyToClipboard('{{ $device['token'] }}')">
+                                                    Copy Token
+                                                </x-filament::dropdown.list.item>
+                                                @if ($device['status'] === 'connect')
+                                                    <x-filament::dropdown.list.item
+                                                        wire:click="disconnectDevice('{{ data_get($device, 'token') ?? '' }}')"
+                                                        class="disconnectButton" data-device-token="{{ $device['token'] }}">
+                                                        Disconnect
+                                                    </x-filament::dropdown.list.item>
+                                                @else
+                                                    <x-filament::dropdown.list.item
+                                                        wire:click="activateDevice('{{ $device['device'] }}', '{{ $device['token'] }}')">
+                                                        Connect
+                                                    </x-filament::dropdown.list.item>
+                                                @endif
+                                                <x-filament::dropdown.list.item
+                                                    wire:click="requestDeleteOtp('{{ $device['token'] }}')" size="xs">
+                                                    Delete
+                                                </x-filament::dropdown.list.item>
+                                            </x-filament::dropdown.list>
+                                        </x-filament::dropdown>
 
                                     </td>
                                 </tr>
@@ -249,26 +312,11 @@ $confirmDelete = action(function () use ($fonnteService) {
                 </div>
             </x-filament::section>
 
-            <x-filament::modal icon="heroicon-o-exclamation-triangle" icon-color="danger" id="requestDeleteOtp">
-                <x-slot name="heading">
-                    Konfirmasi Hapus Device
-                </x-slot>
-                <x-slot name="description">
-                    Masukkan OTP yang sudah dikirim ke WhatsApp untuk menghapus device ini.
-                </x-slot>
+            {{-- modal request Delete Otp --}}
+            @include('filament.resources.devices.partials.modal-request-delete-otp')
 
-                <x-filament::input wire:model="otp" placeholder="Masukkan OTP" />
-
-                <x-slot name="footerActions">
-                    <x-filament::button color="secondary" wire:click="$dispatch('close-modal', { id: 'requestDeleteOtp' })">
-                        Batal
-                    </x-filament::button>
-                    <x-filament::button color="danger" wire:click="confirmDelete">
-                        Hapus
-                    </x-filament::button>
-                </x-slot>
-
-            </x-filament::modal>
+            {{-- modal connect --}}
+            @include('filament.resources.devices.partials.modal-connect')
 
         </div>
     @endvolt

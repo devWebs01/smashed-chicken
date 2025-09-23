@@ -13,9 +13,11 @@ class ListDevices extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->label('Tambah Perangkat'),
         ];
     }
+
+    protected ?string $heading = 'Daftar Perangkat';
 
     protected string $view = 'filament.resources.devices.pages.list-device';
 }

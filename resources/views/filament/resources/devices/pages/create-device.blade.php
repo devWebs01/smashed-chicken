@@ -71,7 +71,7 @@ $addDevice = action(function () use ($fonnteService) {
         Notification::make()->title('Error menambah device')->body($e->getMessage())->danger()->send();
     }
 
-    return redirect()->route('filament.admin.resources.devices.index');
+    return redirect()->route(route: 'filament.admin.resources.devices.index');
 });
 
 ?>
@@ -85,14 +85,14 @@ $addDevice = action(function () use ($fonnteService) {
                 <form wire:submit="addDevice" class="space-y-6 mb-6">
 
                     <div>
-                        <p class="mb-2 font-medium text-sm">Device Name</p>
+                        <p class="mb-2 font-medium text-sm">Nama Perangkat</p>
                         <x-filament::input.wrapper :valid="!$errors->has('name')">
                             <x-filament::input type="text" wire:model="name" />
                         </x-filament::input.wrapper>
                     </div>
 
                     <div>
-                        <p class="mb-2 font-medium text-sm">WhatsApp Number</p>
+                        <p class="mb-2 font-medium text-sm">Nomor WhatsApp</p>
                         <x-filament::input.wrapper :valid="!$errors->has('device')">
 
                             <x-filament::input type="number" wire:model="device" />
@@ -100,7 +100,7 @@ $addDevice = action(function () use ($fonnteService) {
 
                     </div>
                     <x-filament::button type="submit">
-                        New Device
+                        Submit
                     </x-filament::button>
                 </form>
 

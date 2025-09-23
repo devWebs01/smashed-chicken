@@ -9,5 +9,7 @@ class CreateDevice extends CreateRecord
 {
     protected static string $resource = DeviceResource::class;
 
+    protected ?string $heading = 'Tambah Perangkat';
+
     protected string $view = 'filament.resources.devices.pages.create-device';
 }
