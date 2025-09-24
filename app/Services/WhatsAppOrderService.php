@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\WebhookData;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -18,7 +19,7 @@ class WhatsAppOrderService
     /**
      * Process multiple product selections
      */
-    public function processSelections(array $selections, array $data, string $phoneNumber, string $deviceToken): void
+    public function processSelections(array $selections, WebhookData $webhookData, string $phoneNumber, string $deviceToken): void
     {
         $phoneKey = $this->canonicalPhone($phoneNumber);
         $addToOrderId = Cache::get('add_to_order_'.$phoneKey);
@@ -72,7 +73,7 @@ class WhatsAppOrderService
         $reviewMessage = str_replace(['{items}', '{total}'], [$itemsText, number_format($total, 0, ',', '.')], $reviewMessage);
 
         // Store selections in cache
-        $customerName = Cache::get('customer_name_'.$phoneKey, $data['name'] ?? 'Customer');
+        $customerName = Cache::get('customer_name_'.$phoneKey, 'Customer');
         Cache::put('order_'.$phoneKey, [
             'selections' => $validSelections,
             'total' => $total,
