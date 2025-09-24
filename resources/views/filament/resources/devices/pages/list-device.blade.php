@@ -188,6 +188,19 @@ $checkDeviceStatus = action(function () use ($fonnteService) {
     }
 });
 
+$copyToClipboard = action(function (string $token) use ($fonnteService) {
+    // Validate token using FonnteService
+    $res = $fonnteService->getDeviceProfile($token);
+    if (!data_get($res, 'status')) {
+        Notification::make()->title('Token tidak valid')->body(data_get($res, 'error', 'Gagal memvalidasi token'))->danger()->send();
+        return;
+    }
+
+    // Dispatch event to copy token to clipboard via JavaScript
+    $this->dispatch('copy-to-clipboard', token: $token);
+    Notification::make()->title('Token berhasil disalin ke clipboard')->success()->send();
+});
+
 ?>
 
 <x-filament-panels::page>
@@ -320,4 +333,17 @@ $checkDeviceStatus = action(function () use ($fonnteService) {
 
         </div>
     @endvolt
+
+    <script>
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('copy-to-clipboard', (data) => {
+                navigator.clipboard.writeText(data.token).then(() => {
+                    console.log('Token copied to clipboard');
+                }).catch(err => {
+                    console.error('Failed to copy token: ', err);
+                });
+            });
+        });
+    </script>
+
 </x-filament-panels::page>
