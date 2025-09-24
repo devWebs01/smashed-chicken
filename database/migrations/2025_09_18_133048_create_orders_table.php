@@ -21,6 +21,8 @@ return new class extends Migration
             $table->enum('status', ['pending', 'processing', 'completed', 'cancelled', 'draft', 'confirm'])->default('draft');
             $table->decimal('total_price', 10, 2);
             $table->enum('delivery_method', ['dine_in', 'takeaway', 'delivery']);
+            $table->foreignId('device_id')->nullable()->constrained('devices')->onDelete('set null');
+
             $table->timestamps();
         });
     }
