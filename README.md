@@ -56,6 +56,34 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
+## WhatsApp Integration Setup
+
+This project includes WhatsApp ordering system using Fonnte API.
+
+### Prerequisites
+- Laravel application
+- Fonnte account (https://fonnte.com)
+- ngrok for local development
+
+### Installation
+1. Clone the repository
+2. Copy `.env.example` to `.env`
+3. Set `ACCOUNT_TOKEN` from Fonnte dashboard
+4. Run `composer install` and `npm install`
+
+### Local Development with ngrok
+1. Install ngrok: `snap install ngrok`
+2. Authenticate ngrok: `ngrok config add-authtoken YOUR_NGROK_TOKEN`
+3. Start Laravel: `php artisan serve`
+4. In another terminal: `ngrok http 8000`
+5. Run script: `./update_ngrok.sh` (updates .env with ngrok URL)
+6. Set webhook in Fonnte dashboard: `https://{ngrok-url}/webhook/whatsapp`
+
+### Usage
+- Send "menu" to view products
+- Send product numbers to order (e.g., "1 2" for 2 portions of product 1)
+- Follow the prompts for delivery and payment
+
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
