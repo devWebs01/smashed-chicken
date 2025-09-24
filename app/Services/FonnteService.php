@@ -37,7 +37,7 @@ class FonnteService
         }
 
         // Gunakan JSON format dan pastikan Content-Type header benar
-        $response = Http::withHeaders([
+        $response = Http::timeout(30)->withHeaders([
             'Authorization' => $token,
             'Content-Type' => 'application/json', // Tambahkan header
         ])->post($endpoint, $params);
