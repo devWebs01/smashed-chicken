@@ -7,4 +7,4 @@ Route::get('/', function () {
     return view('filament.pages.welcome');
 });
 
-Route::post('/webhook/whatsapp', [WhatsAppController::class, 'handleWebhook']);
+Route::match(['get', 'post'], '/webhook/whatsapp', [WhatsAppController::class, 'handleWebhook']);
