@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
-use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Services\FonnteService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class WhatsAppController extends Controller
 {
@@ -26,8 +26,9 @@ class WhatsAppController extends Controller
         $p = preg_replace('/[^0-9]/', '', (string) $raw);
         // remove leading 0 -> 62...
         if (str_starts_with($p, '0')) {
-            $p = '62' . substr($p, 1);
+            $p = '62'.substr($p, 1);
         }
+
         return $p;
     }
 
@@ -50,10 +51,10 @@ class WhatsAppController extends Controller
         $senderCanonical = $this->canonicalPhone($sender);
         $messageIdKey = $inboxId ?? ($data['message_id'] ?? null); // prefer provider message id if present
         if ($messageIdKey) {
-            $dedupKey = 'processed_msgid_' . $messageIdKey;
+            $dedupKey = 'processed_msgid_'.$messageIdKey;
         } else {
             // fallback: use canonical sender + message content hash (no timestamp)
-            $dedupKey = 'processed_' . md5($senderCanonical . '|' . $message);
+            $dedupKey = 'processed_'.md5($senderCanonical.'|'.$message);
         }
         if (Cache::has($dedupKey)) {
             return response()->json(['status' => 'duplicate'], 200);
@@ -67,8 +68,8 @@ class WhatsAppController extends Controller
         }
 
         // Normalize device phone number for querying
-        $normalizedDevice = str_starts_with($devicePhone, '0') ? '62' . substr($devicePhone, 1) : $devicePhone;
-        $altDevice = str_starts_with($devicePhone, '62') ? '0' . substr($devicePhone, 2) : $devicePhone;
+        $normalizedDevice = str_starts_with($devicePhone, '0') ? '62'.substr($devicePhone, 1) : $devicePhone;
+        $altDevice = str_starts_with($devicePhone, '62') ? '0'.substr($devicePhone, 2) : $devicePhone;
 
         // Get device token from database (try both formats)
         Log::info('Searching for device', ['original' => $devicePhone, 'normalized' => $normalizedDevice, 'alt' => $altDevice]);
@@ -81,7 +82,7 @@ class WhatsAppController extends Controller
                 foreach ($res['data']['data'] as $fonnteDevice) {
                     $fonntePhone = $fonnteDevice['device'];
                     // Normalize Fonnte phone
-                    $fonnteNormalized = str_starts_with($fonntePhone, '0') ? '62' . substr($fonntePhone, 1) : $fonntePhone;
+                    $fonnteNormalized = str_starts_with($fonntePhone, '0') ? '62'.substr($fonntePhone, 1) : $fonntePhone;
                     if ($fonnteNormalized === $normalizedDevice || $fonnteNormalized === $altDevice) {
                         // Found, create in DB
                         $device = Device::create([
@@ -95,7 +96,8 @@ class WhatsAppController extends Controller
                 }
             }
             if (! $device) {
-                Log::error('Device not found and could not sync from Fonnte: ' . $devicePhone);
+                Log::error('Device not found and could not sync from Fonnte: '.$devicePhone);
+
                 return response()->json(['status' => 'error'], 400);
             }
         }
@@ -104,35 +106,39 @@ class WhatsAppController extends Controller
         try {
             // Check customer info step
             $phoneKey = $this->canonicalPhone($sender);
-            $customerStep = Cache::get('customer_' . $phoneKey);
-            if (!$customerStep) {
+            $customerStep = Cache::get('customer_'.$phoneKey);
+            if (! $customerStep) {
                 // First time, ask for name
                 $message = "Selamat datang! Silakan perkenalkan diri Anda.\n\nKetik nama lengkap Anda:";
-                Cache::put('customer_' . $phoneKey, 'await_name', 3600); // 1 hour
+                Cache::put('customer_'.$phoneKey, 'await_name', 3600); // 1 hour
                 $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
+
                 return;
             }
 
             if ($customerStep === 'await_name') {
                 $customerName = trim($message);
                 if (empty($customerName)) {
-                    $message = "Nama tidak boleh kosong. Silakan ketik nama lengkap Anda:";
+                    $message = 'Nama tidak boleh kosong. Silakan ketik nama lengkap Anda:';
                     $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
+
                     return;
                 }
-                Cache::put('customer_name_' . $phoneKey, $customerName, 3600);
-                Cache::put('customer_' . $phoneKey, 'await_address', 3600);
+                Cache::put('customer_name_'.$phoneKey, $customerName, 3600);
+                Cache::put('customer_'.$phoneKey, 'await_address', 3600);
                 $message = "Terima kasih, {$customerName}!\n\nSilakan kirim alamat lengkap Anda untuk pengiriman (jika diperlukan):";
                 $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
+
                 return;
             }
 
             if ($customerStep === 'await_address') {
                 $customerAddress = trim($message);
-                Cache::put('customer_address_' . $phoneKey, $customerAddress, 3600);
-                Cache::put('customer_' . $phoneKey, 'info_complete', 3600);
+                Cache::put('customer_address_'.$phoneKey, $customerAddress, 3600);
+                Cache::put('customer_'.$phoneKey, 'info_complete', 3600);
                 $message = "Terima kasih! Data Anda telah tersimpan.\n\nSekarang Anda bisa mulai memesan.\nKetik 'menu' untuk melihat daftar produk.";
                 $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
+
                 return;
             }
 
@@ -142,22 +148,25 @@ class WhatsAppController extends Controller
             // Handle special commands
             if (strtolower($message) === 'tambah') {
                 $this->handleTambah($data, $sender, $deviceToken);
+
                 return;
             } elseif (strtolower($message) === 'selesai') {
                 $phoneKey = $this->canonicalPhone($sender);
-                Cache::forget('add_to_order_' . $phoneKey);
+                Cache::forget('add_to_order_'.$phoneKey);
                 $message = "Order selesai. Terima kasih!\nKetik 'menu' jika ingin pesan lagi.";
                 $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
+
                 return;
             } elseif (strtolower($message) === 'reset') {
                 $phoneKey = $this->canonicalPhone($sender);
-                Cache::forget('order_' . $phoneKey);
-                Cache::forget('add_to_order_' . $phoneKey);
-                Cache::forget('customer_' . $phoneKey);
-                Cache::forget('customer_name_' . $phoneKey);
-                Cache::forget('customer_address_' . $phoneKey);
+                Cache::forget('order_'.$phoneKey);
+                Cache::forget('add_to_order_'.$phoneKey);
+                Cache::forget('customer_'.$phoneKey);
+                Cache::forget('customer_name_'.$phoneKey);
+                Cache::forget('customer_address_'.$phoneKey);
                 $message = "Data cache direset. Silakan mulai dari awal.\nKetik 'halo' untuk perkenalan.";
                 $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
+
                 return;
             } elseif (str_starts_with(strtolower($message), 'batal ')) {
                 $parts = explode(' ', $message);
@@ -166,9 +175,11 @@ class WhatsAppController extends Controller
                 } else {
                     $this->sendDefaultReply($sender, $deviceToken);
                 }
+
                 return;
             } elseif (strtolower($message) === 'batal') {
                 $this->showPendingOrders($sender, $deviceToken);
+
                 return;
             }
 
@@ -191,17 +202,18 @@ class WhatsAppController extends Controller
                 // --- ROUTE ORDER STEP IF EXISTS ---
                 // Normalisasi key phone for cache
                 $phoneKey = $this->canonicalPhone($sender);
-                $orderCacheKey = 'order_' . $phoneKey;
+                $orderCacheKey = 'order_'.$phoneKey;
 
                 // Jika ada order in cache, panggil confirmOrder untuk step state
                 if (Cache::has($orderCacheKey)) {
                     $this->confirmOrder($data, $sender, $deviceToken);
+
                     return response()->json(['status' => 'ok']);
                 }
 
                 // Try to parse product selections
                 $selections = $this->parseProductSelections($message);
-                if (!empty($selections)) {
+                if (! empty($selections)) {
                     $this->handleMultipleSelections($data, $sender, $deviceToken, $selections);
                 } else {
                     // Default reply
@@ -209,7 +221,7 @@ class WhatsAppController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            Log::error('Error processing webhook: ' . $e->getMessage());
+            Log::error('Error processing webhook: '.$e->getMessage());
             $this->sendDefaultReply($sender, $deviceToken);
         }
 
@@ -223,7 +235,7 @@ class WhatsAppController extends Controller
         $message = "*Menu Makanan Kami:*\n\n";
 
         foreach ($products as $index => $product) {
-            $message .= ($index + 1) . ". *{$product->name}* - Rp " . number_format($product->price, 0, ',', '.') . "\n";
+            $message .= ($index + 1).". *{$product->name}* - Rp ".number_format($product->price, 0, ',', '.')."\n";
             if ($product->description) {
                 $message .= "   {$product->description}\n\n";
             }
@@ -237,27 +249,26 @@ class WhatsAppController extends Controller
         $message .= "   Contoh: *1 3* atau *1=3* (3 porsi produk 1)\n";
         $message .= "• Untuk pesan multiple produk, pisahkan dengan koma.\n";
         $message .= "   Contoh: *1=2, 2=1* (2 porsi produk 1 + 1 porsi produk 2)\n\n";
-        $message .= "Ketik menu kapan saja untuk melihat daftar produk lagi.";
+        $message .= 'Ketik menu kapan saja untuk melihat daftar produk lagi.';
 
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
 
     private function sendDefaultReply($phoneNumber, $deviceToken)
     {
-        $message = "Halo! Selamat datang di *Layanan Pemesanan Online*.\n\n" .
-            "Ketik menu untuk melihat daftar produk kami.\n\n" .
-            "*Cara Pemesanan:*\n" .
-            "- Untuk 1 produk: Ketik nomor produk\n" .
-            "   Contoh: 1 (1 porsi produk 1)\n" .
-            "- Untuk jumlah lebih: nomor=jumlah\n" .
-            "   Contoh: 1=3 (3 porsi produk 1)\n" .
-            "- Untuk multiple produk: pisahkan dengan koma\n" .
-            "   Contoh: 1=2, 2=1 (2 porsi produk 1 + 1 porsi produk 2)\n\n" .
-            "*Perintah Lain:*\n" .
-            "- tambah - Tambah produk ke pesanan terakhir\n" .
-            "- batal - Lihat pesanan pending untuk dibatalkan\n\n" .
-            "Silakan mulai dengan mengetik: menu";
-
+        $message = "Halo! Selamat datang di *Layanan Pemesanan Online*.\n\n".
+            "Ketik menu untuk melihat daftar produk kami.\n\n".
+            "*Cara Pemesanan:*\n".
+            "- Untuk 1 produk: Ketik nomor produk\n".
+            "   Contoh: 1 (1 porsi produk 1)\n".
+            "- Untuk jumlah lebih: nomor=jumlah\n".
+            "   Contoh: 1=3 (3 porsi produk 1)\n".
+            "- Untuk multiple produk: pisahkan dengan koma\n".
+            "   Contoh: 1=2, 2=1 (2 porsi produk 1 + 1 porsi produk 2)\n\n".
+            "*Perintah Lain:*\n".
+            "- tambah - Tambah produk ke pesanan terakhir\n".
+            "- batal - Lihat pesanan pending untuk dibatalkan\n\n".
+            'Silakan mulai dengan mengetik: menu';
 
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
@@ -269,6 +280,7 @@ class WhatsAppController extends Controller
         if ($productIndex < 1 || $productIndex > $products->count()) {
             $message = "Nomor produk tidak valid.\nKetik *menu* untuk melihat daftar produk.";
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
@@ -278,8 +290,8 @@ class WhatsAppController extends Controller
 
         // Store selection in cache for 10 minutes (consistent structure)
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        $customerName = Cache::get('customer_name_' . $phoneKey, $data['name'] ?? 'Customer');
-        Cache::put('order_' . $phoneKey, [
+        $customerName = Cache::get('customer_name_'.$phoneKey, $data['name'] ?? 'Customer');
+        Cache::put('order_'.$phoneKey, [
             'selections' => [[
                 'product_id' => $product->id,
                 'product_name' => $product->name,
@@ -293,34 +305,36 @@ class WhatsAppController extends Controller
         ], 600); // 10 minutes
 
         // Send review message
-        $message = "*Review Pesanan Anda:*\n\n" .
-            "Produk: *{$product->name}*\n" .
-            "Jumlah: *{$quantity} porsi*\n" .
-            "Total: *Rp " . number_format($subtotal, 0, ',', '.') . "*\n\n" .
-            "Apakah sudah benar?\n" .
-            "- Ketik *ya* untuk konfirmasi pesanan\n" .
-            "- Ketik *edit* untuk ubah pesanan\n" .
-            "- Ketik *menu* untuk lihat menu lagi";
+        $message = "*Review Pesanan Anda:*\n\n".
+            "Produk: *{$product->name}*\n".
+            "Jumlah: *{$quantity} porsi*\n".
+            'Total: *Rp '.number_format($subtotal, 0, ',', '.')."*\n\n".
+            "Apakah sudah benar?\n".
+            "- Ketik *ya* untuk konfirmasi pesanan\n".
+            "- Ketik *edit* untuk ubah pesanan\n".
+            '- Ketik *menu* untuk lihat menu lagi';
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
 
     private function confirmOrder($data, $phoneNumber, $deviceToken)
     {
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        $orderData = Cache::get('order_' . $phoneKey);
+        $orderData = Cache::get('order_'.$phoneKey);
 
-        if (!$orderData) {
-            $message = "Tidak ada pesanan yang pending. Ketik menu untuk mulai pesan.";
+        if (! $orderData) {
+            $message = 'Tidak ada pesanan yang pending. Ketik menu untuk mulai pesan.';
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
         // Check timeout (10 minutes)
         $createdAt = $orderData['created_at'] ?? now()->timestamp;
         if (now()->timestamp - $createdAt > 600) {
-            Cache::forget('order_' . $phoneKey);
-            $message = "Pesanan expired karena tidak ada aktivitas. Silakan mulai pesan baru dengan ketik menu.";
+            Cache::forget('order_'.$phoneKey);
+            $message = 'Pesanan expired karena tidak ada aktivitas. Silakan mulai pesan baru dengan ketik menu.';
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
@@ -330,29 +344,33 @@ class WhatsAppController extends Controller
             // Ask for delivery method
             $message = "Pilih metode pengiriman:\n- Ketik 'takeaway' untuk ambil sendiri\n- Ketik 'delivery' untuk diantar";
             $orderData['step'] = 'await_delivery_method';
-            Cache::put('order_' . $phoneKey, $orderData, 600);
+            Cache::put('order_'.$phoneKey, $orderData, 600);
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
         if ($step === 'await_delivery_method') {
             $deliveryMethod = strtolower(trim($data['message']));
-            if (!in_array($deliveryMethod, ['takeaway', 'delivery'])) {
+            if (! in_array($deliveryMethod, ['takeaway', 'delivery'])) {
                 $message = "Metode pengiriman tidak valid. Ketik 'takeaway' atau 'delivery'.";
                 $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
                 return;
             }
             $orderData['delivery_method'] = $deliveryMethod;
             if ($deliveryMethod === 'delivery') {
                 $orderData['step'] = 'await_address';
-                Cache::put('order_' . $phoneKey, $orderData, 600);
-                $message = "Silakan kirim alamat lengkap pengiriman.";
+                Cache::put('order_'.$phoneKey, $orderData, 600);
+                $message = 'Silakan kirim alamat lengkap pengiriman.';
                 $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
                 return;
             } else {
                 $orderData['step'] = 'await_payment_method';
-                Cache::put('order_' . $phoneKey, $orderData, 600);
+                Cache::put('order_'.$phoneKey, $orderData, 600);
                 $this->askPaymentMethod($phoneNumber, $deviceToken);
+
                 return;
             }
         }
@@ -360,22 +378,25 @@ class WhatsAppController extends Controller
         if ($step === 'await_address') {
             $orderData['customer_address'] = trim($data['message']);
             $orderData['step'] = 'await_payment_method';
-            Cache::put('order_' . $phoneKey, $orderData, 600);
+            Cache::put('order_'.$phoneKey, $orderData, 600);
             $this->askPaymentMethod($phoneNumber, $deviceToken);
+
             return;
         }
 
         if ($step === 'await_payment_method') {
             $paymentMethod = strtolower(trim($data['message']));
-            if (!in_array($paymentMethod, ['cash', 'transfer'])) {
+            if (! in_array($paymentMethod, ['cash', 'transfer'])) {
                 $message = "Metode pembayaran tidak valid. Ketik 'cash' atau 'transfer'.";
                 $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
                 return;
             }
             $orderData['payment_method'] = $paymentMethod;
             $orderData['step'] = 'ready_to_confirm';
-            Cache::put('order_' . $phoneKey, $orderData, 600);
+            Cache::put('order_'.$phoneKey, $orderData, 600);
             $this->showFinalReview($phoneNumber, $deviceToken, $orderData);
+
             return;
         }
 
@@ -401,7 +422,7 @@ class WhatsAppController extends Controller
             $message .= "\nAlamat: {$orderData['customer_address']}";
         }
         $message .= "\nPembayaran: {$orderData['payment_method']}";
-        $message .= "\n*Total: Rp " . number_format($orderData['total'], 0, ',', '.') . "*\n\n";
+        $message .= "\n*Total: Rp ".number_format($orderData['total'], 0, ',', '.')."*\n\n";
         $message .= "Ketik 'ya' untuk konfirmasi akhir atau 'edit' untuk ubah.";
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
@@ -410,9 +431,9 @@ class WhatsAppController extends Controller
     {
         $phoneKey = $this->canonicalPhone($phoneNumber);
         try {
-            DB::transaction(function () use ($orderData, $phoneNumber, $phoneKey) {
+            DB::transaction(function () use ($orderData, $phoneKey) {
                 // Create order
-                $customerAddress = $orderData['customer_address'] ?? Cache::get('customer_address_' . $phoneKey);
+                $customerAddress = $orderData['customer_address'] ?? Cache::get('customer_address_'.$phoneKey);
                 $order = Order::create([
                     'customer_name' => $orderData['customer_name'],
                     'customer_phone' => $phoneKey, // <-- store canonical
@@ -436,8 +457,9 @@ class WhatsAppController extends Controller
                 }
             });
         } catch (\Exception $e) {
-            $message = $e->getMessage() . "\nSilakan coba lagi atau hubungi admin.";
+            $message = $e->getMessage()."\nSilakan coba lagi atau hubungi admin.";
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
@@ -450,12 +472,12 @@ class WhatsAppController extends Controller
             $confirmationMessage .= "\nAlamat: {$orderData['customer_address']}";
         }
         $confirmationMessage .= "\nPembayaran: {$orderData['payment_method']}";
-        $confirmationMessage .= "\n*Total: Rp " . number_format($orderData['total'], 0, ',', '.') . "*\n\n";
+        $confirmationMessage .= "\n*Total: Rp ".number_format($orderData['total'], 0, ',', '.')."*\n\n";
         $confirmationMessage .= "Terima kasih telah memesan!\n";
-        $confirmationMessage .= "Pesanan Anda sedang diproses. Kami akan segera menghubungi Anda untuk detail pengambilan/pengiriman.";
+        $confirmationMessage .= 'Pesanan Anda sedang diproses. Kami akan segera menghubungi Anda untuk detail pengambilan/pengiriman.';
 
         // Clear cache
-        Cache::forget('order_' . $phoneKey);
+        Cache::forget('order_'.$phoneKey);
 
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $confirmationMessage, $deviceToken);
     }
@@ -463,16 +485,17 @@ class WhatsAppController extends Controller
     private function editOrder($phoneNumber, $deviceToken)
     {
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        $orderData = Cache::get('order_' . $phoneKey);
+        $orderData = Cache::get('order_'.$phoneKey);
 
-        if (!$orderData) {
-            $message = "Tidak ada pesanan yang pending. Ketik menu untuk mulai pesan.";
+        if (! $orderData) {
+            $message = 'Tidak ada pesanan yang pending. Ketik menu untuk mulai pesan.';
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
         // Clear cache
-        Cache::forget('order_' . $phoneKey);
+        Cache::forget('order_'.$phoneKey);
 
         $message = "Pesanan dibatalkan. Silakan pilih produk lagi.\nKetik *menu* untuk melihat daftar produk.";
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
@@ -486,7 +509,9 @@ class WhatsAppController extends Controller
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if ($line === '') continue;
+            if ($line === '') {
+                continue;
+            }
 
             // Pattern 1: number=quantity, number-quantity, number:quantity, number quantity
             if (preg_match('/^(\d+)\s*[-:= ]\s*(\d+)$/', $line, $m)) {
@@ -513,12 +538,13 @@ class WhatsAppController extends Controller
     private function handleMultipleSelections($data, $phoneNumber, $deviceToken, $selections)
     {
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        $addToOrderId = Cache::get('add_to_order_' . $phoneKey);
+        $addToOrderId = Cache::get('add_to_order_'.$phoneKey);
 
         if ($addToOrderId) {
             // Add to existing order
             $this->addToExistingOrder($phoneNumber, $deviceToken, $selections, $addToOrderId);
-            Cache::forget('add_to_order_' . $phoneKey);
+            Cache::forget('add_to_order_'.$phoneKey);
+
             return;
         }
 
@@ -541,25 +567,26 @@ class WhatsAppController extends Controller
                 'price' => $product->price,
                 'subtotal' => $subtotal,
             ];
-            $reviewMessage .= "*{$product->name}* - {$sel['quantity']} porsi - Rp " . number_format($subtotal, 0, ',', '.') . "\n";
+            $reviewMessage .= "*{$product->name}* - {$sel['quantity']} porsi - Rp ".number_format($subtotal, 0, ',', '.')."\n";
         }
 
         if (empty($validSelections)) {
             $message = "Tidak ada produk valid dalam pesanan Anda.\nKetik menu untuk melihat daftar produk.";
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
-        $reviewMessage .= "\n*Total Keseluruhan: Rp " . number_format($total, 0, ',', '.') . "*\n\n";
+        $reviewMessage .= "\n*Total Keseluruhan: Rp ".number_format($total, 0, ',', '.')."*\n\n";
         $reviewMessage .= "Apakah sudah benar?\n";
         $reviewMessage .= "- Ketik ya untuk konfirmasi pesanan\n";
         $reviewMessage .= "- Ketik edit untuk ubah pesanan\n";
-        $reviewMessage .= "- Ketik menu untuk lihat menu lagi";
+        $reviewMessage .= '- Ketik menu untuk lihat menu lagi';
 
         // Store selections in cache
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        $customerName = Cache::get('customer_name_' . $phoneKey, $data['name'] ?? 'Customer');
-        Cache::put('order_' . $phoneKey, [
+        $customerName = Cache::get('customer_name_'.$phoneKey, $data['name'] ?? 'Customer');
+        Cache::put('order_'.$phoneKey, [
             'selections' => $validSelections,
             'total' => $total,
             'customer_name' => $customerName,
@@ -573,9 +600,10 @@ class WhatsAppController extends Controller
     private function addToExistingOrder($phoneNumber, $deviceToken, $selections, $orderId)
     {
         $order = Order::find($orderId);
-        if (!$order) {
-            $message = "Pesanan tidak ditemukan.";
+        if (! $order) {
+            $message = 'Pesanan tidak ditemukan.';
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
@@ -617,9 +645,9 @@ class WhatsAppController extends Controller
 
         // Set flag for auto-add next messages (TTL 30 minutes)
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        Cache::put('add_to_order_' . $phoneKey, $order->id, 1800);
+        Cache::put('add_to_order_'.$phoneKey, $order->id, 1800);
 
-        $message = "Produk berhasil ditambahkan ke Order #" . $order->id . ":\n" . implode(', ', $addedItems) . "\n\nTotal sekarang: Rp " . number_format($order->total_price, 0, ',', '.') . "\n\nUntuk menambah produk lagi, kirim nomor/format produk sekarang.\nKetik 'selesai' untuk selesai atau 'tambah' untuk order baru.";
+        $message = 'Produk berhasil ditambahkan ke Order #'.$order->id.":\n".implode(', ', $addedItems)."\n\nTotal sekarang: Rp ".number_format($order->total_price, 0, ',', '.')."\n\nUntuk menambah produk lagi, kirim nomor/format produk sekarang.\nKetik 'selesai' untuk selesai atau 'tambah' untuk order baru.";
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
 
@@ -632,14 +660,15 @@ class WhatsAppController extends Controller
             ->get();
 
         if ($pendingOrders->isEmpty()) {
-            $message = "Anda tidak memiliki pesanan pending.";
+            $message = 'Anda tidak memiliki pesanan pending.';
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
         $message = "*Pesanan Pending Anda:*\n\n";
         foreach ($pendingOrders as $index => $order) {
-            $message .= ($index + 1) . ". Order #" . $order->id . " - Total: Rp " . number_format($order->total_price, 0, ',', '.') . "\n";
+            $message .= ($index + 1).'. Order #'.$order->id.' - Total: Rp '.number_format($order->total_price, 0, ',', '.')."\n";
             foreach ($order->orderItems as $item) {
                 $message .= "   • {$item->product->name} x{$item->quantity}\n";
             }
@@ -659,15 +688,16 @@ class WhatsAppController extends Controller
             ->get();
 
         if ($orderIndex < 1 || $orderIndex > $pendingOrders->count()) {
-            $message = "Nomor pesanan tidak valid.";
+            $message = 'Nomor pesanan tidak valid.';
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
         $order = $pendingOrders->get($orderIndex - 1);
         $order->update(['status' => 'cancelled']);
 
-        $message = "Pesanan #" . $order->id . " telah dibatalkan.";
+        $message = 'Pesanan #'.$order->id.' telah dibatalkan.';
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
 
@@ -680,21 +710,22 @@ class WhatsAppController extends Controller
             ->latest()
             ->first();
 
-        if (!$lastOrder) {
-            $message = "Anda tidak memiliki pesanan pending. Ketik menu untuk mulai pesan baru.";
+        if (! $lastOrder) {
+            $message = 'Anda tidak memiliki pesanan pending. Ketik menu untuk mulai pesan baru.';
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
+
             return;
         }
 
         $message = "*Pesanan Terakhir Anda:*\n\n";
-        $message .= "Order #" . $lastOrder->id . " - Total: Rp " . number_format($lastOrder->total_price, 0, ',', '.') . "\n";
+        $message .= 'Order #'.$lastOrder->id.' - Total: Rp '.number_format($lastOrder->total_price, 0, ',', '.')."\n";
         foreach ($lastOrder->orderItems as $item) {
             $message .= "• {$item->product->name} x{$item->quantity}\n";
         }
         $message .= "\nKirim produk tambahan dengan format yang sama.\nContoh: *3=1* untuk tambah 1 porsi produk 3";
 
         // Store order id in cache for adding
-        Cache::put('add_to_order_' . $phoneKey, $lastOrder->id, 600);
+        Cache::put('add_to_order_'.$phoneKey, $lastOrder->id, 600);
 
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }

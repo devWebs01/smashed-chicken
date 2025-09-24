@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5fb20ed60b71e727be8b900a83246121",
+    "content-hash": "4ae1887012da183751ef31f5adb271ec",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -5405,6 +5405,60 @@
                 }
             ],
             "time": "2025-02-21T14:16:57+00:00"
+        },
+        {
+            "name": "suhailparad/lara-command-chain",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/suhailparad/lara-command-chain.git",
+                "reference": "aa60842364f2b6c70645511bebce728c3cfed7e7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/suhailparad/lara-command-chain/zipball/aa60842364f2b6c70645511bebce728c3cfed7e7",
+                "reference": "aa60842364f2b6c70645511bebce728c3cfed7e7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Suhailparad\\LaraCommandChain\\LaraCommandChainServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Suhailparad\\LaraCommandChain\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Muhammed Suhail",
+                    "email": "pk.suhail47@gmail.com"
+                }
+            ],
+            "description": "Run predefined chains of commands in Laravel",
+            "keywords": [
+                "Chain",
+                "artisan",
+                "commands",
+                "laravel",
+                "workflow"
+            ],
+            "support": {
+                "issues": "https://github.com/suhailparad/lara-command-chain/issues",
+                "source": "https://github.com/suhailparad/lara-command-chain/tree/v1.0.0"
+            },
+            "time": "2025-09-11T09:58:19+00:00"
         },
         {
             "name": "symfony/clock",

@@ -70,6 +70,7 @@ This project includes WhatsApp ordering system using Fonnte API.
 2. Copy `.env.example` to `.env`
 3. Set `ACCOUNT_TOKEN` from Fonnte dashboard
 4. Run `composer install` and `npm install`
+5. Run setup command: `php artisan whatsapp:setup`
 
 ### Local Development with ngrok
 1. Install ngrok: `snap install ngrok`
