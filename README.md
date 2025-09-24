@@ -1,91 +1,30 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## WhatsApp Integration Setup
-
-This project includes WhatsApp ordering system using Fonnte API.
-
-### Prerequisites
-- Laravel application
-- Fonnte account (https://fonnte.com)
-- ngrok for local development
-
-### Installation
-1. Clone the repository
-2. Copy `.env.example` to `.env`
-3. Set `ACCOUNT_TOKEN` from Fonnte dashboard
-4. Run `composer install` and `npm install`
-5. Run setup command: `php artisan whatsapp:setup`
-
-### Local Development with ngrok
-1. Install ngrok: `snap install ngrok`
-2. Authenticate ngrok: `ngrok config add-authtoken YOUR_NGROK_TOKEN`
-3. Start Laravel: `php artisan serve`
-4. In another terminal: `ngrok http 8000`
-5. Run script: `./update_ngrok.sh` (updates .env with ngrok URL)
-6. Set webhook in Fonnte dashboard: `https://{ngrok-url}/webhook/whatsapp`
-
-### Usage
-- Send "menu" to view products
-- Send product numbers to order (e.g., "1 2" for 2 portions of product 1)
-- Follow the prompts for delivery and payment
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 # smashed-chicken
+
+Proyek ini mencakup sistem pemesanan WhatsApp menggunakan API Fonnte.
+
+## Pengaturan Integrasi WhatsApp
+
+### Prasyarat
+- Aplikasi Laravel
+- Akun Fonnte (https://fonnte.com)
+- ngrok untuk pengembangan lokal
+
+### Instalasi
+1. Klon repositori
+2. Salin `.env.example` ke `.env`
+3. Atur `ACCOUNT_TOKEN` dari dashboard Fonnte
+4. Jalankan `composer install` dan `npm install`
+5. Jalankan perintah setup: `php artisan whatsapp:setup`
+
+### Pengembangan Lokal dengan ngrok
+1. Instal ngrok: `snap install ngrok`
+2. Autentikasi ngrok: `ngrok config add-authtoken TOKEN_NGROK_ANDA`
+3. Mulai Laravel: `php artisan serve`
+4. Di terminal lain: `ngrok http 8000`
+5. Jalankan skrip: `./update_ngrok.sh` (memperbarui .env dengan URL ngrok)
+6. Atur webhook di dashboard Fonnte: `https://{ngrok-url}/webhook/whatsapp`
+
+### Penggunaan
+- Kirim pesan "menu" untuk melihat produk
+- Kirim nomor produk untuk memesan (misalnya, "1 2" untuk 2 porsi produk 1)
+- Ikuti petunjuk untuk pengiriman dan pembayaran
