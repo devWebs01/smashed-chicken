@@ -194,9 +194,9 @@ class WhatsAppController extends Controller
 
             if ($isMenuRequest) {
                 $this->sendProductMenu($sender, $deviceToken);
-            } elseif (strtolower($message) === 'ya') {
+            } elseif (in_array($message, ['ya', 'y', 'yes', 'iya', 'ok', 'konfirmasi'])) {
                 $this->confirmOrder($data, $sender, $deviceToken);
-            } elseif (strtolower($message) === 'edit') {
+            } elseif (in_array($message, ['edit', 'ubah', 'change', 'ganti'])) {
                 $this->editOrder($sender, $deviceToken);
             } else {
                 // --- ROUTE ORDER STEP IF EXISTS ---
@@ -222,7 +222,8 @@ class WhatsAppController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Error processing webhook: '.$e->getMessage());
-            $this->sendDefaultReply($sender, $deviceToken);
+            $errorMessage = "Maaf, terjadi kesalahan sistem.\nSilakan coba lagi atau ketik *menu* untuk mulai pesan.";
+            $this->fonnteService->sendWhatsAppMessage($sender, $errorMessage, $deviceToken);
         }
 
         return response()->json(['status' => 'ok']);
@@ -256,19 +257,23 @@ class WhatsAppController extends Controller
 
     private function sendDefaultReply($phoneNumber, $deviceToken)
     {
-        $message = "Halo! Selamat datang di *Layanan Pemesanan Online*.\n\n".
-            "Ketik menu untuk melihat daftar produk kami.\n\n".
+        $message = "Maaf, pesan Anda tidak dapat dipahami.\n\n".
+            "Ketik *menu* untuk melihat daftar produk kami.\n\n".
             "*Cara Pemesanan:*\n".
             "- Untuk 1 produk: Ketik nomor produk\n".
-            "   Contoh: 1 (1 porsi produk 1)\n".
+            "   Contoh: *1* (1 porsi produk 1)\n".
             "- Untuk jumlah lebih: nomor=jumlah\n".
-            "   Contoh: 1=3 (3 porsi produk 1)\n".
-            "- Untuk multiple produk: pisahkan dengan koma\n".
-            "   Contoh: 1=2, 2=1 (2 porsi produk 1 + 1 porsi produk 2)\n\n".
+            "   Contoh: *1=3* (3 porsi produk 1)\n".
+            "- Untuk multiple produk dengan qty sama: 1,2=3 (produk 1 dan 2 masing-masing 3 porsi)\n".
+            "   Contoh: *1,2=2* (2 porsi produk 1 + 2 porsi produk 2)\n".
+            "- Untuk multiple dengan qty berbeda: pisahkan dengan spasi\n".
+            "   Contoh: *1=2 3=1 12=2,4* (2 porsi produk 1, 1 porsi produk 3, 2 porsi produk 12, 1 porsi produk 4)\n\n".
             "*Perintah Lain:*\n".
-            "- tambah - Tambah produk ke pesanan terakhir\n".
-            "- batal - Lihat pesanan pending untuk dibatalkan\n\n".
-            'Silakan mulai dengan mengetik: menu';
+            "- *tambah* - Tambah produk ke pesanan terakhir\n".
+            "- *batal* - Lihat pesanan pending untuk dibatalkan\n".
+            "- *ya* - Konfirmasi pesanan\n".
+            "- *edit* - Batalkan pesanan dan mulai ulang\n\n".
+            'Silakan coba lagi atau ketik: menu';
 
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
@@ -278,7 +283,7 @@ class WhatsAppController extends Controller
         $products = Product::all();
 
         if ($productIndex < 1 || $productIndex > $products->count()) {
-            $message = "Nomor produk tidak valid.\nKetik *menu* untuk melihat daftar produk.";
+            $message = "Maaf, nomor produk *{$productIndex}* tidak valid atau tidak tersedia.\nKetik *menu* untuk melihat daftar produk yang tersedia.";
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
 
             return;
@@ -423,7 +428,8 @@ class WhatsAppController extends Controller
         }
         $message .= "\nPembayaran: {$orderData['payment_method']}";
         $message .= "\n*Total: Rp ".number_format($orderData['total'], 0, ',', '.')."*\n\n";
-        $message .= "Ketik 'ya' untuk konfirmasi akhir atau 'edit' untuk ubah.";
+        $message .= "Ketik 'ya', 'y', 'yes', 'ok' untuk konfirmasi akhir\n";
+        $message .= "Ketik 'edit', 'ubah' untuk mengubah pesanan.";
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
 
@@ -431,7 +437,9 @@ class WhatsAppController extends Controller
     {
         $phoneKey = $this->canonicalPhone($phoneNumber);
         try {
-            DB::transaction(function () use ($orderData, $phoneKey) {
+            DB::transaction(function () use ($orderData, $phoneKey, $deviceToken) {
+                // Find device by token
+                $device = Device::where('token', $deviceToken)->first();
                 // Create order
                 $customerAddress = $orderData['customer_address'] ?? Cache::get('customer_address_'.$phoneKey);
                 $order = Order::create([
@@ -443,6 +451,7 @@ class WhatsAppController extends Controller
                     'total_price' => $orderData['total'],
                     'payment_method' => $orderData['payment_method'],
                     'delivery_method' => $orderData['delivery_method'],
+                    'device_id' => $device ? $device->id : null,
                 ]);
 
                 // Create order items
@@ -457,29 +466,17 @@ class WhatsAppController extends Controller
                 }
             });
         } catch (\Exception $e) {
-            $message = $e->getMessage()."\nSilakan coba lagi atau hubungi admin.";
+            Log::error('Failed to finalize order: '.$e->getMessage());
+            $message = "Maaf, terjadi kesalahan saat memproses pesanan Anda.\nSilakan coba lagi dalam beberapa saat atau hubungi admin untuk bantuan.";
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
 
             return;
         }
 
-        $confirmationMessage = "*Pesanan Dikonfirmasi!*\n\n";
-        foreach ($orderData['selections'] as $sel) {
-            $confirmationMessage .= "*{$sel['product_name']}* - {$sel['quantity']} porsi\n";
-        }
-        $confirmationMessage .= "\nPengiriman: {$orderData['delivery_method']}";
-        if (isset($orderData['customer_address'])) {
-            $confirmationMessage .= "\nAlamat: {$orderData['customer_address']}";
-        }
-        $confirmationMessage .= "\nPembayaran: {$orderData['payment_method']}";
-        $confirmationMessage .= "\n*Total: Rp ".number_format($orderData['total'], 0, ',', '.')."*\n\n";
-        $confirmationMessage .= "Terima kasih telah memesan!\n";
-        $confirmationMessage .= 'Pesanan Anda sedang diproses. Kami akan segera menghubungi Anda untuk detail pengambilan/pengiriman.';
-
         // Clear cache
         Cache::forget('order_'.$phoneKey);
 
-        $this->fonnteService->sendWhatsAppMessage($phoneNumber, $confirmationMessage, $deviceToken);
+        // Confirmation message will be sent by OrderObserver
     }
 
     private function editOrder($phoneNumber, $deviceToken)
@@ -504,31 +501,62 @@ class WhatsAppController extends Controller
     private function parseProductSelections($message)
     {
         $selections = [];
-        // Split by comma or newline (one or more)
-        $lines = preg_split('/[,\n]+/', $message);
+        $message = trim($message);
+        if (empty($message)) {
+            return $selections;
+        }
 
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line === '') {
-                continue;
+        // Find all patterns like "1, 2 = 1" or "12=2, 4"
+        preg_match_all('/(\d+(?:\s*,\s*\d+)*)\s*=\s*([^=\s]+(?:\s*,\s*[^=\s]+)*)/', $message, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $left = $match[1];
+            $right = $match[2];
+
+            // Split left by comma -> product ids
+            $product_strs = array_map('trim', explode(',', $left));
+            $products = array_map('intval', $product_strs);
+
+            // Split right by comma
+            $right_parts = array_map('trim', explode(',', $right));
+            $qtys = [];
+            $extra_products = [];
+            foreach ($right_parts as $part) {
+                if (is_numeric($part)) {
+                    $qtys[] = (int) $part;
+                } else {
+                    // Assume it's a product id
+                    $extra_products[] = (int) $part;
+                }
             }
 
-            // Pattern 1: number=quantity, number-quantity, number:quantity, number quantity
-            if (preg_match('/^(\d+)\s*[-:= ]\s*(\d+)$/', $line, $m)) {
+            $qty = $qtys[0] ?? 1;
+
+            // Add products from left with the qty
+            foreach ($products as $productIndex) {
+                if ($productIndex > 0) {
+                    $selections[] = ['index' => $productIndex, 'quantity' => $qty];
+                }
+            }
+
+            // Add extra products with qty 1
+            foreach ($extra_products as $productIndex) {
+                if ($productIndex > 0) {
+                    $selections[] = ['index' => $productIndex, 'quantity' => 1];
+                }
+            }
+        }
+
+        // Also handle single numbers without =
+        $remaining = preg_replace('/(\d+(?:\s*,\s*\d+)*)\s*=\s*([^=\s]+(?:\s*,\s*[^=\s]+)*)/', '', $message);
+        $tokens = preg_split('/\s+/', $remaining);
+        foreach ($tokens as $token) {
+            $token = trim($token);
+            if (preg_match('/^(\d+)$/', $token, $m)) {
                 $productIndex = (int) $m[1];
-                $quantity = (int) $m[2];
-            }
-            // Pattern 2: single number -> qty = 1
-            elseif (preg_match('/^(\d+)$/', $line, $m)) {
-                $productIndex = (int) $m[1];
-                $quantity = 1;
-            } else {
-                // tidak match
-                continue;
-            }
-
-            if ($quantity > 0) {
-                $selections[] = ['index' => $productIndex, 'quantity' => $quantity];
+                if ($productIndex > 0) {
+                    $selections[] = ['index' => $productIndex, 'quantity' => 1];
+                }
             }
         }
 
@@ -549,7 +577,7 @@ class WhatsAppController extends Controller
         }
 
         $products = Product::all();
-        $validSelections = [];
+        $selectionMap = [];
         $total = 0;
         $reviewMessage = "*Review Pesanan Anda:*\n\n";
 
@@ -558,30 +586,39 @@ class WhatsAppController extends Controller
                 continue; // Skip invalid
             }
             $product = $products->get($sel['index'] - 1);
-            $subtotal = $product->price * $sel['quantity'];
-            $total += $subtotal;
-            $validSelections[] = [
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'quantity' => $sel['quantity'],
-                'price' => $product->price,
-                'subtotal' => $subtotal,
-            ];
-            $reviewMessage .= "*{$product->name}* - {$sel['quantity']} porsi - Rp ".number_format($subtotal, 0, ',', '.')."\n";
+            $pid = $product->id;
+            if (! isset($selectionMap[$pid])) {
+                $selectionMap[$pid] = [
+                    'product_id' => $pid,
+                    'product_name' => $product->name,
+                    'quantity' => 0,
+                    'price' => $product->price,
+                    'subtotal' => 0,
+                ];
+            }
+            $selectionMap[$pid]['quantity'] += $sel['quantity'];
+            $selectionMap[$pid]['subtotal'] += $product->price * $sel['quantity'];
         }
 
+        $validSelections = array_values($selectionMap);
+
         if (empty($validSelections)) {
-            $message = "Tidak ada produk valid dalam pesanan Anda.\nKetik menu untuk melihat daftar produk.";
+            $message = "Maaf, tidak ada produk valid dalam pesanan Anda.\nNomor produk mungkin tidak tersedia atau format salah.\n\nKetik *menu* untuk melihat daftar produk yang tersedia.";
             $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
 
             return;
         }
 
+        foreach ($validSelections as $sel) {
+            $reviewMessage .= "*{$sel['product_name']}* - {$sel['quantity']} porsi - Rp ".number_format($sel['subtotal'], 0, ',', '.')."\n";
+            $total += $sel['subtotal'];
+        }
+
         $reviewMessage .= "\n*Total Keseluruhan: Rp ".number_format($total, 0, ',', '.')."*\n\n";
         $reviewMessage .= "Apakah sudah benar?\n";
-        $reviewMessage .= "- Ketik ya untuk konfirmasi pesanan\n";
-        $reviewMessage .= "- Ketik edit untuk ubah pesanan\n";
-        $reviewMessage .= '- Ketik menu untuk lihat menu lagi';
+        $reviewMessage .= "- Ketik 'ya', 'y', 'yes', 'ok' untuk konfirmasi pesanan\n";
+        $reviewMessage .= "- Ketik 'edit', 'ubah' untuk ubah pesanan\n";
+        $reviewMessage .= "- Ketik 'menu' untuk lihat menu lagi";
 
         // Store selections in cache
         $phoneKey = $this->canonicalPhone($phoneNumber);

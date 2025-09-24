@@ -19,6 +19,7 @@ class Order extends Model
         'payment_method',
         'total_price',
         'delivery_method',
+        'device_id',
     ];
 
     protected $casts = [
@@ -43,5 +44,10 @@ class Order extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function device()
+    {
+        return $this->belongsTo(Device::class);
     }
 }
