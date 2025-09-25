@@ -7,6 +7,7 @@ return [
             'php artisan db:seed',
             'php artisan cache:clear',
             'php artisan config:clear',
+            'php artisan storage:link'
         ],
         'deploy' => [
             'php artisan down',

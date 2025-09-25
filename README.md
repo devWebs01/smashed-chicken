@@ -27,7 +27,7 @@ Proyek ini adalah sistem pemesanan makanan berbasis WhatsApp yang dibangun denga
 - **Panel Admin:** Filament 4
 - **Frontend:** Vite, Tailwind CSS
 - **Gateway WhatsApp:** [Fonnte API](https://fonnte.com/)
-- **Database:** MySQL/MariaDB (atau DB lain yang didukung Laravel)
+- **Database:** SQLite (default), MySQL/MariaDB, atau DB lain yang didukung Laravel
 - **Tunneling Pengembangan:** Ngrok
 
 ## Skema Database
@@ -130,14 +130,14 @@ erDiagram
       ```bash
       php artisan key:generate
       ```
-    - Konfigurasikan koneksi database Anda di file `.env` (`DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`).
+    - Konfigurasikan koneksi database Anda di file `.env`. Default menggunakan SQLite (file `database/database.sqlite` akan dibuat otomatis). Untuk database lain seperti MySQL, konfigurasikan `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
     - Tambahkan Token Akun Fonnte Anda ke file `.env`:
       ```
       ACCOUNT_TOKEN=token_fonnte_anda
       ```
 
 4.  **Jalankan Perintah Pengaturan Otomatis:**
-    Perintah ini akan melakukan migrasi database, mengisinya dengan data awal, dan memandu Anda melalui pengaturan ngrok jika diperlukan.
+    Perintah ini akan memeriksa dan membuat file database SQLite jika belum ada, melakukan migrasi database, mengisinya dengan data awal, dan memandu Anda melalui pengaturan ngrok jika diperlukan.
     ```bash
     php artisan whatsapp:setup
     ```
@@ -184,5 +184,5 @@ erDiagram
 
 ## Perintah Artisan yang Tersedia
 
-- `php artisan whatsapp:setup`: Perintah utama untuk pengaturan awal proyek.
+- `php artisan whatsapp:setup`: Perintah utama untuk pengaturan awal proyek. Memeriksa dan membuat file database SQLite jika diperlukan, menjalankan migrasi, seeding, dan pengaturan ngrok.
 - `php artisan chain:run --name=setup`: Menjalankan rantai migrasi dan seeding (digunakan oleh perintah setup).

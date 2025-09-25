@@ -27,6 +27,9 @@ class SetupWhatsAppProject extends Command
     {
         $this->info('🚀 Starting WhatsApp Project Setup...');
 
+        // Check database setup for SQLite
+        $this->setupDatabase();
+
         // Run setup commands using chain
         $this->call('chain:run', ['name' => 'setup']);
 
@@ -39,6 +42,21 @@ class SetupWhatsAppProject extends Command
         $this->showSetupInstructions();
 
         $this->info('🎉 Setup completed! Follow the instructions above to complete ngrok setup.');
+    }
+
+    private function setupDatabase()
+    {
+        $dbConnection = env('DB_CONNECTION');
+        if ($dbConnection === 'sqlite') {
+            $dbPath = database_path('database.sqlite');
+            if (!file_exists($dbPath)) {
+                $this->info('📁 Creating SQLite database file...');
+                touch($dbPath);
+                $this->info('✅ SQLite database file created!');
+            } else {
+                $this->info('✅ SQLite database file already exists.');
+            }
+        }
     }
 
     private function checkNgrokSetup()
