@@ -1,0 +1,10 @@
+version: "3"
+agent:
+    authtoken: 2rP6VwcQ6Zy1z4k0YYEiYqGvc4o_2teejvGFxSud1USm28gtG
+
+tunnels:
+  myapp:
+    proto: http
+    addr: 8000
+    # gunakan hostname jika kamu sudah reserve the ngrok subdomain
+    hostname: toad-current-humbly.ngrok-free.app

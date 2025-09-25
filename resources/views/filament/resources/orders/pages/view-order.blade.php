@@ -101,7 +101,12 @@ state([
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 font-medium">Metode Pengiriman</p>
                                 <p class="font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ $order->delivery_method ?? '-' }}</p>
+                                    {{ $order->delivery_method ? ucfirst(str_replace('_', ' ', $order->delivery_method)) : '-' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 font-medium">Metode Pembayaran</p>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200">
+                                    {{ $order->payment_method ? ucfirst($order->payment_method) : '-' }}</p>
                             </div>
                         </div>
                     </section>
