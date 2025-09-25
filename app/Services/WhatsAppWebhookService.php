@@ -29,6 +29,7 @@ class WhatsAppWebhookService
         // Only process text messages
         if (($data['type'] ?? 'text') !== 'text') {
             Log::info('Ignoring non-text message', ['type' => $data['type'] ?? 'unknown']);
+
             return ['status' => 'ignored'];
         }
 
