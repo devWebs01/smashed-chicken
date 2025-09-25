@@ -17,8 +17,13 @@ NGROK_DOMAIN=$(echo $NGROK_URL | sed 's|https://||')
 # Update .env file
 if [ -f .env ]; then
     sed -i "s|NGROK_WEBHOOK_URL=.*|NGROK_WEBHOOK_URL=$NGROK_DOMAIN|" .env
+    sed -i "s|APP_URL=.*|APP_URL=$NGROK_URL|" .env
     echo "Updated NGROK_WEBHOOK_URL to $NGROK_DOMAIN"
-    echo "Set webhook in Fonnte dashboard to: https://$NGROK_DOMAIN/webhook/whatsapp"
+    echo "Updated APP_URL to $NGROK_URL"
+    echo "Set webhook in Fonnte dashboard to: $NGROK_URL/webhook/whatsapp"
+    echo ""
+    echo "Clear config cache:"
+    echo "php artisan config:clear"
 else
     echo "Error: .env file not found"
     exit 1

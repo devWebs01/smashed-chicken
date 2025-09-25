@@ -157,6 +157,10 @@ erDiagram
       ```bash
       ./update_ngrok.sh
       ```
+    - Bersihkan cache konfigurasi:
+      ```bash
+      php artisan config:clear
+      ```
     - Skrip akan menampilkan URL webhook. Salin URL ini dan tempelkan ke pengaturan webhook di [Dasbor Fonnte](https://fonnte.com/device) Anda. URL akan terlihat seperti ini: `https://<subdomain-ngrok-anda>.ngrok-free.app/webhook/whatsapp`.
 
 7.  **Build Aset Frontend:**

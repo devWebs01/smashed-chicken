@@ -49,7 +49,7 @@ class SetupWhatsAppProject extends Command
         $dbConnection = env('DB_CONNECTION');
         if ($dbConnection === 'sqlite') {
             $dbPath = database_path('database.sqlite');
-            if (!file_exists($dbPath)) {
+            if (! file_exists($dbPath)) {
                 $this->info('📁 Creating SQLite database file...');
                 touch($dbPath);
                 $this->info('✅ SQLite database file created!');
