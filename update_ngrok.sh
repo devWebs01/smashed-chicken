@@ -1,30 +1,30 @@
 #!/bin/bash
 
-# Script to update NGROK_WEBHOOK_URL in .env file
-# Run this after starting ngrok: ./update_ngrok.sh
+# Script untuk memperbarui NGROK_WEBHOOK_URL dalam file .env
+# Jalankan ini setelah memulai ngrok: ./update_ngrok.sh
 
-# Get ngrok public URL from local API
+# Mendapatkan URL publik ngrok dari API lokal
 NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
 
 if [ -z "$NGROK_URL" ]; then
-    echo "Error: Could not get ngrok URL. Make sure ngrok is running on port 8000."
+    echo "Error: Tidak dapat mendapatkan URL ngrok. Pastikan ngrok berjalan di port 8000."
     exit 1
 fi
 
-# Remove https:// if present, since we want the domain only
+# Hapus https:// jika ada, karena kita hanya ingin domain saja
 NGROK_DOMAIN=$(echo $NGROK_URL | sed 's|https://||')
 
-# Update .env file
+# Perbarui file .env
 if [ -f .env ]; then
     sed -i "s|NGROK_WEBHOOK_URL=.*|NGROK_WEBHOOK_URL=$NGROK_DOMAIN|" .env
     sed -i "s|APP_URL=.*|APP_URL=$NGROK_URL|" .env
-    echo "Updated NGROK_WEBHOOK_URL to $NGROK_DOMAIN"
-    echo "Updated APP_URL to $NGROK_URL"
-    echo "Set webhook in Fonnte dashboard to: $NGROK_URL/webhook/whatsapp"
+    echo "NGROK_WEBHOOK_URL diperbarui ke $NGROK_DOMAIN"
+    echo "APP_URL diperbarui ke $NGROK_URL"
+    echo "Set webhook di dashboard Fonnte ke: $NGROK_URL/webhook/whatsapp"
     echo ""
-    echo "Clear config cache:"
+    echo "Bersihkan cache konfigurasi:"
     echo "php artisan config:clear"
 else
-    echo "Error: .env file not found"
+    echo "Error: File .env tidak ditemukan"
     exit 1
 fi
