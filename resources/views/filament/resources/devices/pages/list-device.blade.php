@@ -46,16 +46,33 @@ $reloadDevices = action(function ($fonnteService) {
 
 // disconnect
 $disconnectDevice = action(function ($token) use ($fonnteService) {
-    $res = $fonnteService->disconnectDevice($token);
-    if (!data_get($res, 'status')) {
-        $reason = data_get($res, 'error', 'Gagal disconnect');
-        Notification::make()->title('Gagal disconnect')->body($reason)->danger()->send();
+    try {
+        $res = $fonnteService->disconnectDevice($token);
+        if (!data_get($res, 'status')) {
+            $reason = data_get($res, 'error', 'Gagal disconnect device');
+            $detail = data_get($res, 'data.detail') ?? 'Periksa koneksi internet atau coba lagi nanti';
 
-        return;
+            Notification::make()
+                ->title('❌ Gagal Disconnect Device')
+                ->body("Error: {$reason}\nDetail: {$detail}")
+                ->danger()
+                ->persistent()
+                ->send();
+
+            return;
+        }
+
+        Notification::make()->title('✅ Device Berhasil Disconnect')->body('Device telah terputus dari WhatsApp. Webhook tidak akan menerima pesan lagi.')->success()->send();
+
+        $this->reloadDevices($fonnteService);
+    } catch (\Exception $e) {
+        Log::error('Disconnect device error: ' . $e->getMessage());
+        Notification::make()
+            ->title('❌ Error Sistem')
+            ->body('Terjadi kesalahan internal: ' . $e->getMessage())
+            ->danger()
+            ->send();
     }
-    Notification::make()->title('Device berhasil disconnect')->success()->send();
-
-    $this->reloadDevices($fonnteService);
 });
 
 $requestDeleteOtp = action(function (string $deviceToken, ?string $otp = null) use ($fonnteService) {
@@ -128,18 +145,34 @@ $confirmDelete = action(function () use ($fonnteService) {
 
 $activateDevice = action(function (string $device, string $token) use ($fonnteService) {
     try {
-        // pakai API Get QR
+        // Cek status device dulu
+        $profileRes = $fonnteService->getDeviceProfile($token);
+        if (data_get($profileRes, 'data.device_status') === 'connect') {
+            Notification::make()->title('ℹ️ Device Sudah Terhubung')->body('Device ini sudah connected. Tidak perlu connect ulang.')->info()->send();
+            $this->reloadDevices($fonnteService);
+            return;
+        }
+
+        // Request QR activation
         $res = $fonnteService->requestQRActivation($device, $token);
-        // atau bisa custom method untuk endpoint qr, tergantung implementasi
 
         if (!data_get($res, 'status')) {
             $reason = data_get($res, 'error') ?? data_get($res, 'reason', 'Gagal generate QR Code');
-            Notification::make()->title('Gagal Connect')->body($reason)->danger()->send();
-            // kalau reason = "device already connect", mungkin bisa langsung reload dan notif sukses
-            if ($reason === 'device already connect') {
+            $detail = data_get($res, 'data.detail') ?? 'Periksa koneksi internet atau coba lagi nanti';
+
+            // Special handling for specific errors
+            if (str_contains(strtolower($reason), 'already connect')) {
+                Notification::make()->title('ℹ️ Device Sudah Connected')->body('Device sudah terhubung sebelumnya. Status akan diperbarui.')->info()->send();
                 $this->reloadDevices($fonnteService);
-                Notification::make()->title('Device sudah terhubung')->success()->send();
+                return;
             }
+
+            Notification::make()
+                ->title('❌ Gagal Generate QR Code')
+                ->body("Error: {$reason}\nDetail: {$detail}")
+                ->danger()
+                ->persistent()
+                ->send();
             return;
         }
 
@@ -147,44 +180,84 @@ $activateDevice = action(function (string $device, string $token) use ($fonnteSe
         $this->selectedToken = $token;
         $this->selectedDevice = $device;
 
-        // buka modal
+        if (!$this->qrUrl) {
+            Notification::make()->title('❌ QR Code Tidak Ditemukan')->body('Fonnte tidak mengembalikan URL QR code. Coba lagi atau hubungi support.')->danger()->send();
+            return;
+        }
+
+        // Buka modal connect
         $this->dispatch('open-modal', id: 'connectDevice');
 
-        // mulai polling status
+        Notification::make()->title('📱 QR Code Generated')->body('Silakan scan QR code di modal yang muncul dengan WhatsApp Anda.')->info()->send();
+
+        // Mulai polling status
         $this->dispatch('start-device-polling');
     } catch (\Throwable $e) {
         Log::error('activateDevice error: ' . $e->getMessage());
-        Notification::make()->title('Internal error')->body($e->getMessage())->danger()->send();
+        Notification::make()
+            ->title('❌ Error Sistem')
+            ->body('Terjadi kesalahan internal saat menghubungkan device: ' . $e->getMessage())
+            ->danger()
+            ->send();
     }
 });
 
 $checkDeviceStatus = action(function () use ($fonnteService) {
-    // Cek status saat ini
     if (!$this->selectedToken) {
-        Notification::make()->title('Tidak ada device dipilih')->danger()->send();
+        Notification::make()->title('❌ Tidak Ada Device Dipilih')->body('Token device tidak ditemukan. Coba refresh halaman.')->danger()->send();
         return;
     }
 
     try {
         $res = $fonnteService->getDeviceProfile($this->selectedToken);
 
-        // dd($res);
+        if (!data_get($res, 'status')) {
+            $error = data_get($res, 'error', 'Gagal mendapatkan status device');
+            Notification::make()
+                ->title('❌ Gagal Cek Status')
+                ->body("Error: {$error}")
+                ->danger()
+                ->send();
+            return;
+        }
 
-        if (data_get($res, 'data.device_status') === 'connect') {
-            // sukses, tutup modal
+        $deviceStatus = data_get($res, 'data.device_status');
+        $deviceName = data_get($res, 'data.name', 'Unknown Device');
+
+        if ($deviceStatus === 'connect') {
+            // Success - close modal and redirect
             $this->dispatch('close-modal', id: 'connectDevice');
 
-            // notif
-            Notification::make()->title('Device Connected!')->body('WhatsApp berhasil terhubung.')->success()->send();
+            Notification::make()
+                ->title('🎉 Device Berhasil Terhubung!')
+                ->body("Device '{$deviceName}' sekarang aktif dan siap menerima pesan WhatsApp.")
+                ->success()
+                ->persistent()
+                ->send();
 
-            // redirect ke route filament.admin.resources.devices.index
+            // Reload devices to update status
+            $this->reloadDevices($fonnteService);
+
+            // Redirect to device list
             return $this->redirectRoute('filament.admin.resources.devices.index');
+        } elseif ($deviceStatus === 'disconnect') {
+            Notification::make()->title('⏳ Masih Menunggu...')->body('Device belum terhubung. Pastikan Anda sudah scan QR code dengan WhatsApp.')->warning()->send();
+        } elseif ($deviceStatus === 'connecting') {
+            Notification::make()->title('🔄 Sedang Menghubungkan...')->body('Device sedang dalam proses koneksi. Tunggu beberapa detik lagi.')->info()->send();
         } else {
-            Notification::make()->title('Belum terkoneksi')->body('Device belum berhasil connect. Silakan scan QR dan coba lagi.')->warning()->send();
+            Notification::make()
+                ->title('❓ Status Tidak Dikenal')
+                ->body("Status device: {$deviceStatus}. Coba refresh atau hubungi support.")
+                ->warning()
+                ->send();
         }
     } catch (\Throwable $e) {
-        Log::error('confirmConnect error: ' . $e->getMessage());
-        Notification::make()->title('Error')->body($e->getMessage())->danger()->send();
+        Log::error('checkDeviceStatus error: ' . $e->getMessage());
+        Notification::make()
+            ->title('❌ Error Sistem')
+            ->body('Terjadi kesalahan saat mengecek status device: ' . $e->getMessage())
+            ->danger()
+            ->send();
     }
 });
 
@@ -201,13 +274,205 @@ $copyToClipboard = action(function (string $token) use ($fonnteService) {
     Notification::make()->title('Token berhasil disalin ke clipboard')->success()->send();
 });
 
+$testWebhook = action(function () use ($fonnteService) {
+    $webhookUrl = env('NGROK_WEBHOOK_URL');
+
+    if (!$webhookUrl) {
+        Notification::make()->title('❌ Webhook URL Tidak Dikonfigurasi')->body('Set NGROK_WEBHOOK_URL di file .env terlebih dahulu.')->danger()->send();
+        return;
+    }
+
+    $testPayload = [
+        'sender' => '6285951572182',
+        'message' => 'test webhook',
+        'device' => '6285951572182',
+        'type' => 'text',
+    ];
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::timeout(10)->post($webhookUrl . '/webhook/whatsapp', $testPayload);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            if (($data['status'] ?? null) === 'ok') {
+                Notification::make()->title('✅ Webhook Berfungsi!')->body('Webhook berhasil menerima dan memproses test message.')->success()->send();
+            } else {
+                Notification::make()
+                    ->title('⚠️ Webhook Response Tidak Normal')
+                    ->body('Response: ' . json_encode($data))
+                    ->warning()
+                    ->send();
+            }
+        } else {
+            Notification::make()
+                ->title('❌ Webhook Error')
+                ->body("HTTP {$response->status()}: {$response->body()}")
+                ->danger()
+                ->send();
+        }
+    } catch (\Exception $e) {
+        Notification::make()
+            ->title('❌ Test Webhook Gagal')
+            ->body('Error: ' . $e->getMessage())
+            ->danger()
+            ->send();
+    }
+});
+
 ?>
 
 <x-filament-panels::page>
 
     @volt
         <div>
+            {{-- Status Summary --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Device Terhubung -->
+                <div class="flex items-center p-4 bg-green-100 border border-green-200 rounded-xl shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-600 mr-3" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 17h10M9 21h6m-7-4V5a2 2 0 012-2h4a2 2 0 012 2v12H8z" />
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Device Terhubung</p>
+                        <p class="text-xl font-bold text-gray-900">
+                            {{ count(collect($devices)->where('status', 'connect')) }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Device Terputus -->
+                <div class="flex items-center p-4 bg-red-100 border border-red-200 rounded-xl shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-600 mr-3" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01M5.07 19h13.86c.89 0 1.34-1.08.71-1.71L12.71 4.29a1 1 0 00-1.42 0L4.36 17.29c-.63.63-.18 1.71.71 1.71z" />
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Device Terputus</p>
+                        <p class="text-xl font-bold text-gray-900">
+                            {{ count(collect($devices)->where('status', 'disconnect')) }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Total Device -->
+                <div class="flex items-center p-4 bg-blue-100 border border-blue-200 rounded-xl shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-600 mr-3" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18" />
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Total Device</p>
+                        <p class="text-xl font-bold text-gray-900">
+                            {{ count($devices) }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Connection Guide --}}
+            @if (count(collect($devices)->where('status', 'disconnect')) > 0)
+                <x-filament::section>
+                    <x-slot name="heading">
+                        <div class="flex items-center gap-2">
+                            <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-orange-500" />
+                            <span>Panduan Koneksi Device</span>
+                        </div>
+                    </x-slot>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                            <div>
+                                <p class="font-medium">Buka Fonnte Dashboard</p>
+                                <p class="text-gray-600">Kunjungi <a href="https://fonnte.com/device" target="_blank"
+                                        class="text-blue-600 underline">https://fonnte.com/device</a></p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                            <div>
+                                <p class="font-medium">Cari Device yang Terputus</p>
+                                <p class="text-gray-600">Temukan device dengan status "disconnect" di dashboard Fonnte</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                            <div>
+                                <p class="font-medium">Klik "Connect" dan Scan QR</p>
+                                <p class="text-gray-600">Buka WhatsApp di HP Anda dan scan QR code yang muncul</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="flex-shrink-0 w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                            <div>
+                                <p class="font-medium">Test Koneksi</p>
+                                <p class="text-gray-600">Kirim pesan "menu" ke nomor device untuk test bot WhatsApp</p>
+                            </div>
+                        </div>
+                    </div>
+                </x-filament::section>
+            @endif
+
+            {{-- Webhook Info --}}
             <x-filament::section>
+                <x-slot name="heading">
+                    <div class="flex items-center gap-2">
+                        <x-heroicon-o-globe-alt class="w-5 h-5 text-blue-500" />
+                        <span>Webhook Configuration</span>
+                    </div>
+                </x-slot>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Webhook URL</p>
+                        <p class="text-sm text-gray-600 break-all">
+                            {{ env('NGROK_WEBHOOK_URL') ? env('NGROK_WEBHOOK_URL') . '/webhook/whatsapp' : 'Belum dikonfigurasi' }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700">Status</p>
+                        <x-filament::badge color="success" class="text-xs">
+                            {{ count(collect($devices)->where('status', 'connect')) > 0 ? 'Aktif' : 'Menunggu Device Connect' }}
+                        </x-filament::badge>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <strong>ℹ️ Info:</strong> Webhook menerima pesan WhatsApp secara real-time.
+                        Pastikan URL di atas sudah diset di Fonnte Dashboard → Webhook Settings.
+                    </p>
+                </div>
+
+                {{-- Test Webhook Button --}}
+                <div class="mt-4 flex gap-3">
+                    <x-filament::button wire:click="$dispatch('test-webhook')" size="sm" color="gray" outlined>
+                        <x-heroicon-o-paper-airplane class="w-4 h-4 mr-2" />
+                        Test Webhook
+                    </x-filament::button>
+
+                    @if (env('NGROK_WEBHOOK_URL'))
+                        <a href="{{ env('NGROK_WEBHOOK_URL') }}/webhook/whatsapp"
+                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            <x-heroicon-o-globe-alt class="w-4 h-4 mr-2" />
+                            Open Webhook URL
+                        </a>
+                    @endif
+                </div>
+            </x-filament::section>
+
+            <x-filament::section>
+
                 <div class="relative flex flex-col w-full h-full overflow-scroll">
                     <table class="w-full text-left table-auto min-w-max">
                         <thead>
@@ -239,7 +504,13 @@ $copyToClipboard = action(function (string $token) use ($fonnteService) {
                                 <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
                                     <p
                                         class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                                        Status
+                                        Status Koneksi
+                                    </p>
+                                </th>
+                                <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+                                    <p
+                                        class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                                        Webhook
                                     </p>
                                 </th>
                                 <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
@@ -278,10 +549,31 @@ $copyToClipboard = action(function (string $token) use ($fonnteService) {
                                         </p>
                                     </td>
                                     <td class="p-4 border-b border-blue-gray-50">
-                                        <x-filament::badge class="capitalize">
-                                            {{ $device['status'] }}
-                                        </x-filament::badge>
-
+                                        <div class="flex flex-col gap-1">
+                                            <x-filament::badge :color="$device['status'] === 'connect' ? 'success' : 'danger'" class="capitalize">
+                                                {{ $device['status'] === 'connect' ? 'Terhubung' : 'Terputus' }}
+                                            </x-filament::badge>
+                                            @if ($device['status'] === 'connect')
+                                                <span class="text-xs text-green-600">✅ Ready untuk menerima pesan</span>
+                                            @else
+                                                <span class="text-xs text-red-600">❌ Perlu scan QR untuk connect</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="p-4 border-b border-blue-gray-50">
+                                        <div class="flex flex-col gap-1">
+                                            @if ($device['status'] === 'connect')
+                                                <x-filament::badge color="success" class="text-xs">
+                                                    Aktif
+                                                </x-filament::badge>
+                                                <span class="text-xs text-green-600">Menerima webhook</span>
+                                            @else
+                                                <x-filament::badge color="warning" class="text-xs">
+                                                    Non-aktif
+                                                </x-filament::badge>
+                                                <span class="text-xs text-orange-600">Tidak menerima webhook</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="p-4 border-b border-blue-gray-50">
                                         <x-filament::dropdown>
@@ -300,7 +592,8 @@ $copyToClipboard = action(function (string $token) use ($fonnteService) {
                                                 @if ($device['status'] === 'connect')
                                                     <x-filament::dropdown.list.item
                                                         wire:click="disconnectDevice('{{ data_get($device, 'token') ?? '' }}')"
-                                                        class="disconnectButton" data-device-token="{{ $device['token'] }}">
+                                                        class="disconnectButton"
+                                                        data-device-token="{{ $device['token'] }}">
                                                         Disconnect
                                                     </x-filament::dropdown.list.item>
                                                 @else
@@ -310,7 +603,8 @@ $copyToClipboard = action(function (string $token) use ($fonnteService) {
                                                     </x-filament::dropdown.list.item>
                                                 @endif
                                                 <x-filament::dropdown.list.item
-                                                    wire:click="requestDeleteOtp('{{ $device['token'] }}')" size="xs">
+                                                    wire:click="requestDeleteOtp('{{ $device['token'] }}')"
+                                                    size="xs">
                                                     Delete
                                                 </x-filament::dropdown.list.item>
                                             </x-filament::dropdown.list>
@@ -342,6 +636,11 @@ $copyToClipboard = action(function (string $token) use ($fonnteService) {
                 }).catch(err => {
                     console.error('Failed to copy token: ', err);
                 });
+            });
+
+            // Handle test webhook event
+            Livewire.on('test-webhook', () => {
+                $wire.call('testWebhook');
             });
         });
     </script>

@@ -186,16 +186,44 @@ $completedOrder = function () use ($isClosed) {
 
 $confirmOrder = function () {
     DB::transaction(function () {
-        $this->record->update([
+        $this->order->update([
             'status' => 'confirm',
             'total_price' => $this->totalAmount,
-            'payment_method' => '',
         ]);
 
         $this->syncOrderItemsToDb($this->order);
 
         $this->order->refresh();
         Notification::make()->title('Pesanan Dikonfirmasi')->success()->send();
+    });
+};
+
+$startProcessing = function () {
+    if ($this->isClosed()) {
+        Notification::make()->title('Tidak dapat memproses order')->warning()->send();
+        return;
+    }
+
+    DB::transaction(function () {
+        $this->order->update(['status' => 'processing']);
+        $this->order->refresh();
+        Notification::make()->title('Pesanan mulai diproses')->success()->send();
+    });
+};
+
+$backToPending = function () {
+    DB::transaction(function () {
+        $this->order->update(['status' => 'pending']);
+        $this->order->refresh();
+        Notification::make()->title('Status dikembalikan ke Pending')->info()->send();
+    });
+};
+
+$cancelOrder = function () {
+    DB::transaction(function () {
+        $this->order->update(['status' => 'cancelled']);
+        $this->order->refresh();
+        Notification::make()->title('Pesanan dibatalkan')->warning()->send();
     });
 };
 
@@ -325,7 +353,7 @@ $printBill = function () {
                         {{-- Tombol berdasarkan status pesanan --}}
                         @switch($order->status)
                             @case('draft')
-                                {{-- Pesanan baru, masih draft --}}
+                                {{-- Pesanan baru dari admin, masih draft --}}
                                 <x-filament::button icon="heroicon-o-paper-airplane" color="primary" class="w-full"
                                     :disabled="empty($orderItems)" wire:click="confirmOrder">
                                     Konfirmasi Pesanan
@@ -336,9 +364,41 @@ $printBill = function () {
                                 </x-filament::button>
                             @break
 
+                            @case('pending')
+                                {{-- Pesanan dari WhatsApp, siap diproses --}}
+                                <x-filament::button icon="heroicon-o-play" color="primary" class="w-full"
+                                    wire:click="startProcessing">
+                                    Mulai Proses
+                                </x-filament::button>
+                                <x-filament::button icon="heroicon-o-pencil-square" color="gray" outlined class="w-full"
+                                    wire:click="updateOrder">
+                                    Edit Pesanan
+                                </x-filament::button>
+                                <x-filament::button icon="heroicon-o-x-circle" color="danger" outlined class="w-full"
+                                    wire:click="cancelOrder">
+                                    Batalkan
+                                </x-filament::button>
+                            @break
+
+                            @case('processing')
+                                {{-- Pesanan sedang dibuat / dimasak --}}
+                                <x-filament::button icon="heroicon-o-check-circle" color="success" class="w-full"
+                                    wire:click="completedOrder">
+                                    Selesaikan Pesanan
+                                </x-filament::button>
+                                <x-filament::button icon="heroicon-o-arrow-path" color="warning" outlined class="w-full"
+                                    wire:click="backToPending">
+                                    Kembali ke Pending
+                                </x-filament::button>
+                            @break
+
                             @case('confirm')
                                 {{-- Pesanan sudah dikonfirmasi, siap diproses --}}
-                                <x-filament::button icon="heroicon-o-pencil-square" color="primary" class="w-full" :disabled="empty($orderItems)"
+                                <x-filament::button icon="heroicon-o-play" color="primary" class="w-full"
+                                    wire:click="startProcessing">
+                                    Mulai Proses
+                                </x-filament::button>
+                                <x-filament::button icon="heroicon-o-pencil-square" color="gray" outlined class="w-full"
                                     wire:click="updateOrder">
                                     Update Pesanan
                                 </x-filament::button>
@@ -349,20 +409,6 @@ $printBill = function () {
                                 <x-filament::button icon="heroicon-o-printer" color="success" outlined class="w-full"
                                     :disabled="empty($orderItems)" wire:click="printBill">
                                     Cetak Tagihan
-                                </x-filament::button>
-                            @break
-
-                            @case('pending')
-                                {{-- Pesanan masuk, menunggu diproses --}}
-                                <x-filament::button icon="heroicon-o-clock" color="gray" class="w-full" disabled>
-                                    Menunggu Diproses
-                                </x-filament::button>
-                            @break
-
-                            @case('processing')
-                                {{-- Pesanan sedang dibuat / dimasak --}}
-                                <x-filament::button icon="heroicon-o-cog-6-tooth" color="primary" outlined class="w-full" disabled>
-                                    Sedang Diproses
                                 </x-filament::button>
                             @break
 

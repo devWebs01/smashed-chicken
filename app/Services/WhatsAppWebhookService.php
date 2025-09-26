@@ -26,6 +26,13 @@ class WhatsAppWebhookService
 
         $webhookData = WebhookData::fromArray($data);
 
+        // Only process text messages
+        if (($data['type'] ?? 'text') !== 'text') {
+            Log::info('Ignoring non-text message', ['type' => $data['type'] ?? 'unknown']);
+
+            return ['status' => 'ignored'];
+        }
+
         // Idempotency check
         $dedupKey = $webhookData->getDedupKey();
         if (Cache::has($dedupKey)) {
@@ -33,7 +40,11 @@ class WhatsAppWebhookService
         }
         Cache::put($dedupKey, true, config('whatsapp.cache_ttl.dedup'));
 
-        Log::info('Webhook received', $data);
+        Log::info('Processing text message', [
+            'sender' => $data['sender'] ?? null,
+            'message' => $data['message'] ?? null,
+            'device' => $data['device'] ?? null,
+        ]);
 
         if (! $webhookData->sender || ! $webhookData->devicePhone) {
             return ['status' => 'error', 'code' => 400];

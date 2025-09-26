@@ -34,7 +34,7 @@ state([
 
                             <span @class([
                                 'inline-flex items-center rounded-md px-3 py-1 text-xs font-semibold capitalize mt-2',
-
+                            
                                 // colors per status
                                 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-500/10 dark:text-yellow-400 dark:ring-yellow-500/20' =>
                                     $status === 'draft',
@@ -50,7 +50,7 @@ state([
                                     ['completed', 'closed']),
                                 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20' =>
                                     $status === 'cancelled',
-
+                            
                                 // fallback
                                 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-500/10 dark:text-gray-400 dark:ring-gray-500/20' => !in_array(
                                     $status,
@@ -101,8 +101,14 @@ state([
                             </div>
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 font-medium">Metode Pengiriman</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200 capitalize">
-                                    {{ $order->delivery_method ?? '-' }}</p>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200">
+                                    {{ $order->delivery_method ? ucfirst(str_replace('_', ' ', $order->delivery_method)) : '-' }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 font-medium">Metode Pembayaran</p>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200">
+                                    {{ $order->payment_method ? ucfirst($order->payment_method) : '-' }}</p>
                             </div>
                         </div>
                     </section>

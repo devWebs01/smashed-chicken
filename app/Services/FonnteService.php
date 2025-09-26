@@ -63,7 +63,7 @@ class FonnteService
         return $this->makeRequest(self::ENDPOINTS['send_message'], [
             'target' => $phoneNumber,
             'message' => $message,
-        ], '', $deviceToken);
+        ], false, $deviceToken);
     }
 
     public function getAllDevices()
