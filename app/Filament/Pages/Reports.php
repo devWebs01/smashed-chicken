@@ -130,7 +130,6 @@ class Reports extends Page implements HasTable
         return [
             \App\Filament\Widgets\OrdersStatsOverview::class,
             \App\Filament\Widgets\RevenueChart::class,
-            \App\Filament\Widgets\PopularProductsChart::class,
         ];
     }
 
