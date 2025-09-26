@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 class OrderObserver
 {
     protected $fonnteService;
+
     protected $notificationService;
 
     public function __construct(FonnteService $fonnteService, OrderNotificationService $notificationService)

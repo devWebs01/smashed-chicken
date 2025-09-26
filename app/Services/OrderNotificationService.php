@@ -25,13 +25,14 @@ class OrderNotificationService
         }
 
         // Skip notification for offline orders (no device_id)
-        if (!$order->device_id) {
+        if (! $order->device_id) {
             Log::info('Skipping notification for offline order', [
                 'order_id' => $order->id,
                 'customer_phone' => $order->customer_phone,
-                'status_change' => $oldStatus . ' -> ' . $newStatus,
-                'reason' => 'No device_id - offline order'
+                'status_change' => $oldStatus.' -> '.$newStatus,
+                'reason' => 'No device_id - offline order',
             ]);
+
             return;
         }
 
@@ -40,22 +41,24 @@ class OrderNotificationService
 
         // Get device for sending message
         $device = $order->device;
-        if (!$device) {
+        if (! $device) {
             Log::warning('Device not found for order status notification', [
                 'order_id' => $order->id,
                 'device_id' => $order->device_id,
-                'status_change' => $oldStatus . ' -> ' . $newStatus
+                'status_change' => $oldStatus.' -> '.$newStatus,
             ]);
+
             return;
         }
 
         // Get message template for status change
         $message = $this->getStatusChangeMessage($order, $oldStatus, $newStatus);
-        if (!$message) {
+        if (! $message) {
             Log::info('No notification message for status change', [
                 'order_id' => $order->id,
-                'status_change' => $oldStatus . ' -> ' . $newStatus
+                'status_change' => $oldStatus.' -> '.$newStatus,
             ]);
+
             return;
         }
 
@@ -63,13 +66,13 @@ class OrderNotificationService
             $this->fonnteService->sendWhatsAppMessage($order->customer_phone, $message, $device->token);
             Log::info('Order status change notification sent', [
                 'order_id' => $order->id,
-                'status_change' => $oldStatus . ' -> ' . $newStatus
+                'status_change' => $oldStatus.' -> '.$newStatus,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to send order status notification', [
                 'order_id' => $order->id,
-                'status_change' => $oldStatus . ' -> ' . $newStatus,
-                'error' => $e->getMessage()
+                'status_change' => $oldStatus.' -> '.$newStatus,
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -79,16 +82,16 @@ class OrderNotificationService
      */
     private function getStatusChangeMessage(Order $order, string $oldStatus, string $newStatus): ?string
     {
-        $templateKey = 'status_' . $newStatus;
+        $templateKey = 'status_'.$newStatus;
 
         // Special handling for cancelled status
         if ($newStatus === Order::STATUS_CANCELLED) {
             $templateKey = 'status_cancelled';
         }
 
-        $template = config('whatsapp.messages.' . $templateKey);
+        $template = config('whatsapp.messages.'.$templateKey);
 
-        if (!$template) {
+        if (! $template) {
             return null;
         }
 
@@ -106,7 +109,7 @@ class OrderNotificationService
                 '{delivery}',
                 '{address}',
                 '{payment}',
-                '{total}'
+                '{total}',
             ],
             [
                 $order->id,
@@ -114,7 +117,7 @@ class OrderNotificationService
                 $order->delivery_method,
                 $order->customer_address ?: 'N/A',
                 $order->payment_method,
-                number_format($order->total_price, 0, ',', '.')
+                number_format($order->total_price, 0, ',', '.'),
             ],
             $template
         );
