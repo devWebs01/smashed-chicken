@@ -49,6 +49,12 @@ return [
         'default_reply' => "🤔 Maaf, pesan Anda tidak dapat dipahami.\n\n📋 Ketik *menu* untuk melihat daftar produk kami.\n\n📝 *CARA PEMESANAN:*\n\n• *1 produk:* Ketik nomor produk\n   Contoh: *1* (1 porsi Ayam Geprek Original)\n\n• *Jumlah lebih:* nomor=jumlah\n   Contoh: *1=3* (3 porsi Ayam Geprek Original)\n\n• *Multiple produk:* pisahkan dengan koma\n   Contoh: *1=2, 2=1* (2 porsi produk 1 + 1 porsi produk 2)\n\n• *Qty berbeda:* pisahkan dengan spasi\n   Contoh: *1=2 3=1 5=2* (2 porsi produk 1, 1 porsi produk 3, 2 porsi produk 5)\n\n🔧 *PERINTAH LAIN:*\n• *menu* - Lihat daftar produk\n• *ya* - Konfirmasi pesanan\n• *edit* - Batalkan dan mulai ulang\n• *batal* - Lihat pesanan pending\n\nSilakan coba lagi! 😊",
         'pending_orders' => "*Pesanan Pending Anda:*\n\n{orders}\nKetik *batal [nomor]* untuk membatalkan pesanan.\nContoh: *batal 1*",
         'last_order' => "*Pesanan Terakhir Anda:*\n\nOrder #{id} - Total: Rp {total}\n{items}\n\nKirim produk tambahan dengan format yang sama.\nContoh: *3=1* untuk tambah 1 porsi produk 3",
+
+        // Status change notifications
+        'status_processing' => "*📋 Pesanan Sedang Diproses*\n\nOrder #{order_id}\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nPesanan Anda sedang disiapkan. Kami akan memberitahu ketika siap diantar.",
+        'status_completed' => "*✅ Pesanan Selesai*\n\nOrder #{order_id}\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nPesanan Anda telah selesai! Terima kasih telah memesan.",
+        'status_cancelled' => "*❌ Pesanan Dibatalkan*\n\nOrder #{order_id}\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nMaaf, pesanan Anda telah dibatalkan. Silakan hubungi kami untuk informasi lebih lanjut.",
+        'status_confirm' => "*✅ Pesanan Dikonfirmasi*\n\nOrder #{order_id}\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nPesanan Anda telah dikonfirmasi dan akan segera diproses.",
     ],
 
     'cache_ttl' => [
