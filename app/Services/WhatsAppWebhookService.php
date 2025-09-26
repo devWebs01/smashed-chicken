@@ -392,9 +392,7 @@ class WhatsAppWebhookService
 
         foreach ($products as $index => $product) {
             $message .= ($index + 1).". *{$product->name}* - Rp ".number_format($product->price, 0, ',', '.')."\n";
-            if ($product->description) {
-                $message .= "   {$product->description}\n\n";
-            }
+
         }
 
         $message .= "----------------------------\n";
