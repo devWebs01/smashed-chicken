@@ -27,7 +27,7 @@ class SettingSeeder extends Seeder
         Setting::create([
             'name' => 'Ayam Geprek Mother',
             'logo' => $imagePath,
-            'address' => '123 Main St, Anytown, USA',
+            'address' => 'Jl. Tanjung Pinang rt 30 Jambi Timur',
             'phone' => '555-1234',
         ]);
     }

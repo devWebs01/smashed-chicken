@@ -235,7 +235,7 @@ $confirmOrder = function () {
                         </div>
                         <x-filament::button icon="heroicon-o-paper-airplane" color="primary" class="w-full"
                             :disabled="$currentOrder->isEmpty()" wire:click="confirmOrder">
-                            Konfirmsi Pesanan
+                            Konfirmasi Pesanan
                         </x-filament::button>
                         <div class="grid grid-cols-2 gap-3">
                             <x-filament::button icon="heroicon-o-archive-box-arrow-down" color="warning" outlined
