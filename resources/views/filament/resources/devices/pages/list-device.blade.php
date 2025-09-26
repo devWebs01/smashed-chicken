@@ -555,6 +555,7 @@ $testWebhook = action(function () {
                                         </div>
                                     </td>
 
+                                    
                                     <td class="p-4 border-y">
                                         <div class="flex flex-col gap-1">
                                             @if ($device['status'] === 'connect')

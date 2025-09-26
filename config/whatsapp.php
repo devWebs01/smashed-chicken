@@ -38,7 +38,7 @@ return [
         'no_pending_orders' => 'Anda tidak memiliki pesanan pending.',
         'invalid_order_index' => 'Nomor pesanan tidak valid.',
         'order_cancelled_success' => 'Pesanan #{id} telah dibatalkan.',
-        'products_added' => 'Produk berhasil ditambahkan ke Order #{id}:' . "\n" . '{items}' . "\n\n" . 'Total sekarang: Rp {total}' . "\n\n" . 'Untuk menambah produk lagi, kirim nomor/format produk sekarang.' . "\n" . 'Ketik *selesai* untuk selesai atau *tambah* untuk order baru.',
+        'products_added' => 'Produk berhasil ditambahkan ke Order #{id}:'."\n".'{items}'."\n\n".'Total sekarang: Rp {total}'."\n\n".'Untuk menambah produk lagi, kirim nomor/format produk sekarang.'."\n".'Ketik *selesai* untuk selesai atau *tambah* untuk order baru.',
         'order_complete' => "Order selesai. Terima kasih!\nKetik *menu* jika ingin pesan lagi.",
         'reset_done' => "Data cache direset. Silakan mulai dari awal.\nKetik *halo* untuk perkenalan.",
         'delivery_prompt' => "Pilih metode pengiriman:\n- Ketik *takeaway* untuk ambil sendiri\n- Ketik *delivery* untuk diantar",
