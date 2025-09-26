@@ -78,29 +78,30 @@ state([
                         <div class="space-y-3">
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 font-medium">Nama Pelanggan</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">{{ $order->customer_name ?? '-' }}
+                                <p class="font-semibold text-gray-800 dark:text-gray-200 capitalize">
+                                    {{ $order->customer_name ?? '-' }}
                                 </p>
                             </div>
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 font-medium">No. Telepon</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">
+                                <p class="font-semibold text-gray-800 dark:text-gray-200 capitalize">
                                     {{ $order->customer_phone ?? '-' }}</p>
                             </div>
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 font-medium">Alamat</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">
+                                <p class="font-semibold text-gray-800 dark:text-gray-200 capitalize">
                                     {{ $order->customer_address ?? '-' }}</p>
                             </div>
                         </div>
                         <div class="space-y-3">
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 font-medium">Tanggal</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">
-                                    {{ Carbon\Carbon::parse($order->order_date_time)->format('d M, Y') }}</p>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200 capitalize">
+                                    {{ Carbon\Carbon::parse($order->order_date_time)->format('d M Y - H:i') }}</p>
                             </div>
                             <div>
                                 <p class="text-gray-500 dark:text-gray-400 font-medium">Metode Pengiriman</p>
-                                <p class="font-semibold text-gray-800 dark:text-gray-200">
+                                <p class="font-semibold text-gray-800 dark:text-gray-200 capitalize">
                                     {{ $order->delivery_method ?? '-' }}</p>
                             </div>
                         </div>
@@ -111,12 +112,12 @@ state([
                         <table class="w-full rounded-lg overflow-hidden">
                             <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                                 <tr>
-                                    <th class="p-4 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Item
+                                    <th class="p-4 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Barang
                                     </th>
                                     <th class="p-4 text-center text-sm font-semibold text-gray-900 dark:text-gray-200 w-20">
-                                        Qty</th>
+                                        Jml</th>
                                     <th class="p-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-200 w-28">
-                                        Price</th>
+                                        Harga</th>
                                     <th class="p-4 text-right text-sm font-semibold text-gray-900 dark:text-gray-200 w-32">
                                         Total</th>
                                 </tr>
@@ -157,7 +158,7 @@ state([
                             </div>
                             <div class=" my-2"></div>
                             <div class="flex justify-between font-bold text-lg">
-                                <span class="text-gray-900 dark:text-gray-100">Grand Total</span>
+                                <span class="text-gray-900 dark:text-gray-100">Total Keseluruhan</span>
                                 <span
                                     class="text-gray-900 dark:text-gray-100">{{ formatRupiah($order->total_price) }}</span>
                             </div>
@@ -169,7 +170,7 @@ state([
 
             <div class="print-button-container mt-6 text-center">
                 <x-filament::button icon="heroicon-o-printer" color="primary" onclick="window.print()">
-                    Print Invoice
+                    Cetak Tagihan
                 </x-filament::button>
             </div>
         </div>

@@ -15,6 +15,15 @@ class ViewOrder extends ViewRecord
 
     protected string $view = 'filament.resources.orders.pages.view-order';
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dashboard',
+            static::getResource()::getUrl() => static::getResource()::getNavigationLabel(),
+            static::getUrl(['record' => $this->getRecord()]) => 'Lihat Pesanan',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
