@@ -424,12 +424,13 @@ $testWebhook = action(function () use ($fonnteService) {
             @endif
 
             {{-- Webhook Info --}}
-            <x-filament::section>
+            <x-filament::section icon="heroicon-o-globe-alt">
                 <x-slot name="heading">
-                    <div class="flex items-center gap-2">
-                        <x-heroicon-o-globe-alt class="w-5 h-5 text-blue-500" />
-                        <span>Webhook Configuration</span>
-                    </div>
+                    Webhook Configuration
+                </x-slot>
+                <x-slot name="description">
+                    Webhook menerima pesan WhatsApp secara real-time.
+                    Pastikan URL di atas sudah diset di Fonnte Dashboard → Webhook Settings.
                 </x-slot>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -447,13 +448,6 @@ $testWebhook = action(function () use ($fonnteService) {
                     </div>
                 </div>
 
-                <div class="mt-4 p-3 bg-blue-50 rounded-lg">
-                    <p class="text-sm text-blue-800">
-                        <strong>ℹ️ Info:</strong> Webhook menerima pesan WhatsApp secara real-time.
-                        Pastikan URL di atas sudah diset di Fonnte Dashboard → Webhook Settings.
-                    </p>
-                </div>
-
                 {{-- Test Webhook Button --}}
                 <div class="mt-4 flex gap-3">
                     <x-filament::button wire:click="$dispatch('test-webhook')" size="sm" color="gray" outlined>
@@ -469,9 +463,6 @@ $testWebhook = action(function () use ($fonnteService) {
                         </a>
                     @endif
                 </div>
-            </x-filament::section>
-
-            <x-filament::section>
 
                 <div class="relative flex flex-col w-full h-full overflow-scroll">
                     <table class="w-full text-left table-auto min-w-max">
