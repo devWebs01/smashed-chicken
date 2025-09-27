@@ -23,12 +23,54 @@ Proyek ini adalah sistem pemesanan makanan berbasis WhatsApp yang dibangun denga
 
 ## Teknologi yang Digunakan
 
-- **Backend:** Laravel 12
-- **Panel Admin:** Filament 4
-- **Frontend:** Vite, Tailwind CSS
-- **Gateway WhatsApp:** [Fonnte API](https://fonnte.com/)
-- **Database:** SQLite (default), MySQL/MariaDB, atau DB lain yang didukung Laravel
-- **Tunneling Pengembangan:** Ngrok
+ - **Backend:** Laravel 12
+ - **Panel Admin:** Filament 4
+ - **Frontend:** Vite, Tailwind CSS
+ - **Gateway WhatsApp:** [Fonnte API](https://fonnte.com/)
+ - **Database:** SQLite (default), MySQL/MariaDB, atau DB lain yang didukung Laravel
+ - **Tunneling Pengembangan:** Ngrok
+
+## 📁 File Penting untuk Development
+
+### **Scripts:**
+- `ngrok-static.sh` - Jalankan ngrok dengan URL static (FILE UTAMA)
+- `update_ngrok.sh` - Update webhook URL otomatis (untuk ngrok biasa)
+
+### **Laravel Commands:**
+- `php artisan whatsapp:setup` - Setup awal project
+- `php artisan serve --host=0.0.0.0 --port=8000` - Jalankan development server
+
+## 🌐 ngrok Static URL (Development)
+
+Project ini menggunakan **ngrok static URL** untuk development yang lebih stabil:
+
+### **URL Static Default:**
+```
+https://toad-current-humbly.ngrok-free.app
+```
+
+### **Quick Setup:**
+```bash
+# 1. Jalankan Laravel server
+php artisan serve --host=0.0.0.0 --port=8000
+
+# 2. Di terminal baru, jalankan ngrok static
+./ngrok-static.sh 8000
+
+# 3. Webhook URL: https://toad-current-humbly.ngrok-free.app/webhook/whatsapp
+```
+
+### **Setup di Laptop Baru:**
+```bash
+# Clone project
+git clone <repository>
+cd geprek
+
+# Jalankan ngrok static
+./ngrok-static.sh 8000
+```
+
+> **Catatan:** Pastikan URL sudah di-reserve di [ngrok dashboard](https://dashboard.ngrok.com/domains) sebelum digunakan.
 
 ## Skema Database
 
@@ -145,15 +187,19 @@ erDiagram
 5.  **Jalankan Layanan:**
     - Jalankan server pengembangan Laravel:
       ```bash
-      php artisan serve
+      php artisan serve --host=0.0.0.0 --port=8000
       ```
-    - Di terminal baru, jalankan ngrok untuk mengekspos server lokal Anda:
+    - Di terminal baru, jalankan ngrok dengan URL static (recommended):
+      ```bash
+      ./ngrok-static.sh 8000
+      ```
+    - Atau gunakan ngrok biasa (URL berubah setiap restart):
       ```bash
       ngrok http 8000
       ```
 
 6.  **Atur URL Webhook:**
-    - Di terminal ketiga, jalankan skrip untuk memperbarui file `.env` Anda dengan URL ngrok.
+    - Jalankan skrip untuk memperbarui file `.env` dengan URL ngrok:
       ```bash
       ./update_ngrok.sh
       ```
@@ -162,6 +208,8 @@ erDiagram
       php artisan config:clear
       ```
     - Skrip akan menampilkan URL webhook. Salin URL ini dan tempelkan ke pengaturan webhook di [Dasbor Fonnte](https://fonnte.com/device) Anda. URL akan terlihat seperti ini: `https://<subdomain-ngrok-anda>.ngrok-free.app/webhook/whatsapp`.
+
+    > **Catatan:** Jika menggunakan ngrok static, URL webhook adalah: `https://toad-current-humbly.ngrok-free.app/webhook/whatsapp`
 
 7.  **Build Aset Frontend:**
     ```bash
@@ -186,7 +234,88 @@ erDiagram
   - **Email:** `admin@testing.com`
   - **Password:** `password` (atau nilai apa pun, akan diabaikan)
 
+## Troubleshooting
+
+### **ngrok Issues:**
+
+**❌ "ngrok tidak ditemukan":**
+```bash
+# Install ngrok
+sudo snap install ngrok
+ngrok config add-authtoken <your-token>
+```
+
+**❌ "URL static tidak bisa diakses":**
+- Pastikan URL sudah di-reserve di ngrok dashboard
+- Cek kuota ngrok (free tier terbatas)
+- Restart ngrok: `./ngrok-static.sh 8000`
+
+**❌ "Port 8000 sudah digunakan":**
+```bash
+# Cek proses yang menggunakan port
+lsof -i :8000
+# Bunuh proses jika perlu
+kill -9 <PID>
+```
+
+### **WhatsApp Webhook Issues:**
+
+**❌ "Webhook tidak merespons":**
+- Pastikan Laravel server running di port 8000
+- Cek ngrok tunnel aktif: `http://localhost:4040`
+- Test webhook URL di browser
+
+**❌ "Fonnte device tidak terhubung":**
+- Cek token Fonnte di file `.env`
+- Pastikan device aktif di dashboard Fonnte
+- Test koneksi: `php artisan tinker` → `Fonnte::test()`
+
+### **Database Issues:**
+
+**❌ "Database connection failed":**
+```bash
+# Untuk SQLite
+touch database/database.sqlite
+
+# Untuk MySQL
+php artisan config:clear
+php artisan migrate
+```
+
+## 💡 Tips Praktis
+
+### **Development Workflow Harian:**
+```bash
+# Terminal 1 - Laravel server
+php artisan serve --host=0.0.0.0 --port=8000
+
+# Terminal 2 - ngrok static (recommended)
+./ngrok-static.sh 8000
+
+# Terminal 3 - Update webhook URL
+./update_ngrok.sh
+```
+
+### **Testing WhatsApp Bot:**
+1. Pastikan ngrok running: `./ngrok-static.sh 8000`
+2. Update webhook: `./update_ngrok.sh`
+3. Setup webhook di Fonnte dengan URL yang ditampilkan
+4. Test kirim pesan ke nomor WhatsApp yang terhubung
+
 ## Perintah Artisan yang Tersedia
 
-- `php artisan whatsapp:setup`: Perintah utama untuk pengaturan awal proyek. Memeriksa dan membuat file database SQLite jika diperlukan, menjalankan migrasi, seeding, dan pengaturan ngrok.
-- `php artisan chain:run --name=setup`: Menjalankan rantai migrasi dan seeding (digunakan oleh perintah setup).
+ - `php artisan whatsapp:setup`: Perintah utama untuk pengaturan awal proyek. Memeriksa dan membuat file database SQLite jika diperlukan, menjalankan migrasi, seeding, dan pengaturan ngrok.
+ - `php artisan chain:run --name=setup`: Menjalankan rantai migrasi dan seeding (digunakan oleh perintah setup).
+
+---
+
+## 🎯 Quick Reference
+
+| Task | Command/File |
+|------|-------------|
+| **Setup awal** | `php artisan whatsapp:setup` |
+| **Run server** | `php artisan serve --host=0.0.0.0 --port=8000` |
+| **Run ngrok static** | `./ngrok-static.sh 8000` |
+| **Update webhook** | `./update_ngrok.sh` |
+| **Admin panel** | `http://localhost:8000/admin` |
+| **Webhook URL** | `https://toad-current-humbly.ngrok-free.app/webhook/whatsapp` |
