@@ -20,7 +20,12 @@ class OrderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $recordTitleAttribute = 'status, delivery_method';
+    protected static ?string $recordTitleAttribute = 'customer_name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['customer_name', 'customer_phone', 'status'];
+    }
 
     protected static ?string $navigationLabel = 'Pesanan';
 

@@ -65,12 +65,12 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             ->plugins([
-                FilamentDeveloperLoginsPlugin::make()
-                    ->enabled(app()->environment('local'))
-                    ->users([
-                        'Admin' => 'admin@testing.com',
-                        // 'User' => 'user@testing.com',
-                    ]),
+                // FilamentDeveloperLoginsPlugin::make()
+                //     ->enabled(app()->environment('local'))
+                //     ->users([
+                //         'Admin' => 'admin@testing.com',
+                //         // 'User' => 'user@testing.com',
+                //     ]),
             ])
             ->sidebarCollapsibleOnDesktop()
             ->viteTheme('resources/css/filament/admin/theme.css');

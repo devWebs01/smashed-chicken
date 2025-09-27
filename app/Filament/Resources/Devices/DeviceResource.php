@@ -16,6 +16,13 @@ class DeviceResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'device'];
+    }
+
     protected static ?string $navigationLabel = 'Perangkat';
 
     public static function getPages(): array
