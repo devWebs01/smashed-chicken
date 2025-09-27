@@ -15,6 +15,7 @@ use UnitEnum;
 class Reports extends Page implements HasTable
 {
     use InteractsWithTable;
+
     protected static string|UnitEnum|null $navigationGroup = 'Manajemen Pesanan';
 
     public static function getNavigationIcon(): string
@@ -54,8 +55,8 @@ class Reports extends Page implements HasTable
     public function getTableQuery(): Builder
     {
         return Order::query()
-            ->when($this->startDate, fn($query) => $query->whereDate('created_at', '>=', $this->startDate))
-            ->when($this->endDate, fn($query) => $query->whereDate('created_at', '<=', $this->endDate))
+            ->when($this->startDate, fn ($query) => $query->whereDate('created_at', '>=', $this->startDate))
+            ->when($this->endDate, fn ($query) => $query->whereDate('created_at', '<=', $this->endDate))
             ->with(['orderItems.product' => function ($query) {
                 $query->select('id', 'name'); // Only load necessary columns
             }]);
@@ -87,7 +88,7 @@ class Reports extends Page implements HasTable
                 TextColumn::make('delivery_method')
                     ->label('Tipe')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'delivery' => 'warning',
                         'takeaway' => 'success',
                         default => 'gray',
@@ -96,7 +97,7 @@ class Reports extends Page implements HasTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'completed' => 'success',
                         'pending' => 'warning',
                         'cancelled' => 'danger',
@@ -126,7 +127,7 @@ class Reports extends Page implements HasTable
                                 $productName = $item->product->name;
                             }
 
-                            return $productName . ' x' . $item->quantity;
+                            return $productName.' x'.$item->quantity;
                         })->join(', ');
                     })
                     ->limit(50),
@@ -164,8 +165,8 @@ class Reports extends Page implements HasTable
         return OrderItem::selectRaw('products.name, SUM(order_items.quantity) as total_quantity, SUM(order_items.subtotal) as total_revenue')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->when($this->startDate, fn($query) => $query->whereDate('orders.created_at', '>=', $this->startDate))
-            ->when($this->endDate, fn($query) => $query->whereDate('orders.created_at', '<=', $this->endDate))
+            ->when($this->startDate, fn ($query) => $query->whereDate('orders.created_at', '>=', $this->startDate))
+            ->when($this->endDate, fn ($query) => $query->whereDate('orders.created_at', '<=', $this->endDate))
             ->groupBy('order_items.product_id', 'products.name')
             ->orderBy('total_quantity', 'desc')
             ->limit(10)
