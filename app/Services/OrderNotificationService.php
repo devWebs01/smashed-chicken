@@ -15,6 +15,59 @@ class OrderNotificationService
     }
 
     /**
+     * Send notification for new order
+     */
+    public function notifyNewOrder(Order $order): void
+    {
+        // Skip notification for web orders (no device_id)
+        if (! $order->device_id) {
+            Log::info('Skipping notification for web order', [
+                'order_id' => $order->id,
+                'customer_phone' => $order->customer_phone,
+                'reason' => 'Web order - no device_id required',
+            ]);
+
+            return;
+        }
+
+        // Load order relationships
+        $order->load('orderItems.product', 'device');
+
+        // Get device for sending message
+        $device = $order->device;
+        if (! $device) {
+            Log::warning('Device not found for new order notification', [
+                'order_id' => $order->id,
+                'device_id' => $order->device_id,
+            ]);
+
+            return;
+        }
+
+        // Get message template for new order
+        $message = $this->getNewOrderMessage($order);
+        if (! $message) {
+            Log::info('No notification message for new order', [
+                'order_id' => $order->id,
+            ]);
+
+            return;
+        }
+
+        try {
+            $this->fonnteService->sendWhatsAppMessage($order->customer_phone, $message, $device->token);
+            Log::info('New order notification sent', [
+                'order_id' => $order->id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send new order notification', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Send notification when order status changes
      */
     public function notifyStatusChange(Order $order, string $oldStatus, string $newStatus): void
@@ -75,6 +128,41 @@ class OrderNotificationService
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Get message template for new order
+     */
+    private function getNewOrderMessage(Order $order): ?string
+    {
+        $template = config('whatsapp.messages.new_order',
+            "🛒 *Pesanan Baru #%s*\n\n".
+            "📋 Detail Pesanan:\n%s\n".
+            "🚚 Pengiriman: %s\n".
+            "📍 Alamat: %s\n".
+            "💳 Pembayaran: %s\n".
+            "💰 Total: Rp %s\n\n".
+            'Terima kasih atas pesanan Anda! 🙏'
+        );
+
+        // Build order items text
+        $itemsText = '';
+        foreach ($order->orderItems as $item) {
+            $itemsText .= "• {$item->product->name} x{$item->quantity}\n";
+        }
+
+        // Format message
+        $message = sprintf(
+            $template,
+            $order->id,
+            $itemsText,
+            $order->delivery_method === 'delivery' ? 'Delivery' : 'Take Away',
+            $order->customer_address ?: 'Take Away - Ambil di tempat',
+            $order->payment_method === 'cod' ? 'Cash on Delivery (COD)' : $order->payment_method,
+            number_format($order->total_price, 0, ',', '.')
+        );
+
+        return $message;
     }
 
     /**

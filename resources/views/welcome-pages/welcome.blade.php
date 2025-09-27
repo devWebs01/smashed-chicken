@@ -1,21 +1,183 @@
 <?php
-use function Livewire\Volt\{state, mount, usesPagination, with};
+use function Livewire\Volt\{state, mount, usesPagination, with, on, computed};
 use App\Models\Product;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Services\OrderNotificationService;
 
 usesPagination();
 
-state(['favoriteProducts']);
+state(['favoriteProducts', 'cart' => [], 'showCart' => false, 'showCheckout' => false, 'customerName' => '', 'customerPhone' => '', 'customerAddress' => '', 'deliveryMethod' => 'delivery', 'paymentMethod' => 'cod', 'orderSuccess' => false, 'orderNumber' => null]);
 
 mount(function () {
     $this->favoriteProducts = Product::withCount('orderItems')->orderByDesc('order_items_count')->limit(3)->get();
+    $this->cart = session('cart', []);
 });
 
-with(fn() => ['allProducts' => Product::inRandomOrder()->paginate(6)]);
+$allProducts = computed(function () {
+    return Product::inRandomOrder()->paginate(6);
+});
+
+$addToCart = function ($productId, $quantity = 1) {
+    $product = Product::find($productId);
+    if (!$product) {
+        return;
+    }
+
+    $productKey = (string) $productId;
+
+    if (isset($this->cart[$productKey])) {
+        $this->cart[$productKey]['quantity'] += $quantity;
+    } else {
+        $this->cart[$productKey] = [
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => $product->price,
+            'image' => $product->image,
+            'quantity' => $quantity,
+        ];
+    }
+
+    session(['cart' => $this->cart]);
+    $this->dispatch('cart-updated', count: $this->getCartItemCount());
+};
+
+$removeFromCart = function ($productId) {
+    $productKey = (string) $productId;
+    unset($this->cart[$productKey]);
+    session(['cart' => $this->cart]);
+    $this->dispatch('cart-updated', count: $this->getCartItemCount());
+};
+
+$updateCartQuantity = function ($productId, $quantity) {
+    if ($quantity <= 0) {
+        $this->removeFromCart($productId);
+        return;
+    }
+
+    $productKey = (string) $productId;
+    if (isset($this->cart[$productKey])) {
+        $this->cart[$productKey]['quantity'] = $quantity;
+        session(['cart' => $this->cart]);
+        $this->dispatch('cart-updated', count: $this->getCartItemCount());
+    }
+};
+
+$getCartItemCount = function () {
+    return array_sum(array_column($this->cart, 'quantity'));
+};
+
+$getCartTotal = function () {
+    $total = 0;
+    foreach ($this->cart as $item) {
+        $total += $item['price'] * $item['quantity'];
+    }
+    return $total;
+};
+
+$toggleCart = function () {
+    $this->showCart = !$this->showCart;
+};
+
+$proceedToCheckout = function () {
+    if (empty($this->cart)) {
+        session()->flash('error', 'Keranjang masih kosong');
+        return;
+    }
+    $this->showCart = false;
+    $this->showCheckout = true;
+};
+
+$submitOrder = function () {
+    $this->validate(
+        [
+            'customerName' => 'required|string|max:255',
+            'customerPhone' => 'required|string|max:20',
+            'customerAddress' => 'required_if:deliveryMethod,delivery|string|max:500',
+            'deliveryMethod' => 'required|in:delivery,takeaway',
+            'paymentMethod' => 'required|in:cod,cash',
+        ],
+        [
+            'customerName.required' => 'Nama harus diisi',
+            'customerPhone.required' => 'Nomor HP harus diisi',
+            'customerAddress.required_if' => 'Alamat harus diisi untuk pengiriman',
+        ],
+    );
+
+    if (empty($this->cart)) {
+        session()->flash('error', 'Keranjang masih kosong');
+        return;
+    }
+
+    try {
+        // Create order
+        $order = Order::create([
+            'customer_name' => $this->customerName,
+            'customer_phone' => $this->customerPhone,
+            'customer_address' => $this->deliveryMethod === 'delivery' ? $this->customerAddress : null,
+            'status' => Order::STATUS_PENDING,
+            'order_date_time' => now(),
+            'payment_method' => $this->paymentMethod,
+            'total_price' => $this->getCartTotal(),
+            'delivery_method' => $this->deliveryMethod,
+            'device_id' => null, // Web order
+        ]);
+
+        // Create order items
+        foreach ($this->cart as $item) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $item['id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+                'subtotal' => $item['price'] * $item['quantity'],
+            ]);
+        }
+
+        // Send notification (if WhatsApp service is available)
+        try {
+            app(OrderNotificationService::class)->notifyNewOrder($order);
+        } catch (\Exception $e) {
+            // Log error but don't fail the order
+            \Log::error('Failed to send WhatsApp notification: ' . $e->getMessage());
+        }
+
+        // Clear cart and show success
+        $this->cart = [];
+        session()->forget('cart');
+        $this->orderNumber = $order->id;
+        $this->orderSuccess = true;
+        $this->showCheckout = false;
+
+        // Reset form
+        $this->customerName = '';
+        $this->customerPhone = '';
+        $this->customerAddress = '';
+        $this->deliveryMethod = 'delivery';
+        $this->paymentMethod = 'cod';
+
+        $this->dispatch('cart-updated', count: 0);
+    } catch (\Exception $e) {
+        session()->flash('error', 'Terjadi kesalahan saat memproses pesanan. Silakan coba lagi.');
+        \Log::error('Order creation failed: ' . $e->getMessage());
+    }
+};
+
+$closeSuccessModal = function () {
+    $this->orderSuccess = false;
+    $this->orderNumber = null;
+};
 
 ?>
 <x-app>
     @volt
         <div>
+            <!-- Order form -->
+            @include('welcome-pages.order-form')
+
+            <!-- Checkout model -->
+            @include('welcome-pages.checkout-modal')
+
             <div class="bg-orange-50 w-full">
 
                 <!-- Hero Section -->
@@ -31,11 +193,10 @@ with(fn() => ['allProducts' => Product::inRandomOrder()->paginate(6)]);
                         <div class="flex flex-col sm:flex-row gap-4">
                             <a href="#menus">
                                 <button
-                                    class="w-64 h-12 bg-orange-500 rounded-full shadow-md text-white text-base font-bold tracking-tight">
+                                    class="w-64 h-12 bg-orange-500 rounded-full shadow-md text-white text-base font-bold tracking-tight hover:bg-orange-600">
                                     Pesan Sekarang
                                 </button>
                             </a>
-
                         </div>
                     </div>
                     <div class="flex justify-center items-start">
@@ -166,13 +327,14 @@ with(fn() => ['allProducts' => Product::inRandomOrder()->paginate(6)]);
                             Pilih Menu Ayam Geprek Favoritmu, Pedasnya Bikin Nagih!
                         </p>
                     </div>
-                    <button class="px-6 py-3 bg-orange-500 rounded-full text-white text-lg font-semibold shadow-md">HOT!!!</button>
+                    <button
+                        class="px-6 py-3 bg-orange-500 rounded-full text-white text-lg font-semibold shadow-md">HOT!!!</button>
                 </div>
 
                 <!-- Menu Items -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16">
 
-                    @foreach ($allProducts as $product)
+                    @foreach ($this->allProducts as $product)
                         <!-- Item 1 -->
                         <div class="relative bg-orange-50 rounded-2xl shadow-lg p-5 pt-20 flex flex-col items-center">
                             <img class="absolute -top-10 w-36 h-36 object-cover rounded-full shadow-md"
@@ -183,11 +345,12 @@ with(fn() => ['allProducts' => Product::inRandomOrder()->paginate(6)]);
                                     <span class="text-orange-600"> {{ $product->name }} </span>
                                 </h3>
                                 <div class="flex items-center justify-center gap-1 my-2">
-                                    <p class="text-zinc-800 text-3xl font-medium">{{ formatRupiah($product->price) }}</p>
+                                    <p class="text-zinc-800 text-3xl font-medium">{{ formatRupiah($product->price) }}
+                                    </p>
                                 </div>
                                 <div class="flex mx-auto items-center justify-between w-full mt-5">
-                                    <button
-                                        class="px-5 mx-auto py-2 bg-orange-500 rounded-full text-white text-sm font-semibold">Beli
+                                    <button wire:click="addToCart({{ $product->id }})"
+                                        class="px-5 mx-auto py-2 bg-orange-500 rounded-full text-white text-sm font-semibold hover:bg-orange-600">Beli
                                         Sekarang</button>
                                 </div>
                             </div>
@@ -195,7 +358,7 @@ with(fn() => ['allProducts' => Product::inRandomOrder()->paginate(6)]);
                     @endforeach
                 </div>
                 <div class="mx-auto w-full mt-8">
-                    {{ $allProducts->links(data: ['scrollTo' => false]) }}
+                    {{ $this->allProducts->links(data: ['scrollTo' => false]) }}
 
                 </div>
             </div>
