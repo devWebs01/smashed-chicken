@@ -12,6 +12,14 @@ class ListProducts extends ListRecords
 
     protected ?string $heading = 'Daftar Produk';
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dasbor',
+            static::getUrl() => $this->getHeading(),
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
