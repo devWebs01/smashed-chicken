@@ -431,7 +431,7 @@ $testWebhook = action(function () {
             @endif
 
             {{-- Webhook Info --}}
-            <x-filament::section icon="heroicon-o-globe-alt">
+            <x-filament::section icon="heroicon-o-globe-alt" >
                 <x-slot name="heading">
                     Webhook Configuration
                 </x-slot>
@@ -471,8 +471,7 @@ $testWebhook = action(function () {
                         </a>
                     @endif
                 </div>
-
-                <div class="relative flex flex-col w-full h-full overflow-scroll">
+                <div class="relative flex flex-col w-full h-full overflow-x-auto overflow-visible min-h-screen ">
                     <table class="w-full text-left table-auto min-w-max">
                         <thead>
                             <tr>
@@ -555,7 +554,6 @@ $testWebhook = action(function () {
                                         </div>
                                     </td>
 
-                                    
                                     <td class="p-4 border-y">
                                         <div class="flex flex-col gap-1">
                                             @if ($device['status'] === 'connect')
@@ -571,7 +569,7 @@ $testWebhook = action(function () {
                                     </td>
 
                                     <td class="p-4 border-y">
-                                        <x-filament::dropdown>
+                                        <x-filament::dropdown placement="bottom-end" class="relative">
                                             <x-slot name="trigger">
                                                 <x-filament::button icon="heroicon-m-ellipsis-vertical" size="xs"
                                                     outlined>
@@ -579,7 +577,7 @@ $testWebhook = action(function () {
                                                 </x-filament::button>
                                             </x-slot>
 
-                                            <x-filament::dropdown.list>
+                                            <x-filament::dropdown.list class="z-[9999]">
                                                 <x-filament::dropdown.list.item
                                                     wire:click="copyToClipboard('{{ $device['token'] }}')">
                                                     Copy Token
@@ -622,6 +620,29 @@ $testWebhook = action(function () {
 
         </div>
     @endvolt
+
+    <style>
+        /* Fix dropdown positioning to prevent being cut off by header */
+        [x-data*="dropdown"] {
+            position: relative !important;
+        }
+
+        /* Ensure dropdown menu has proper z-index and positioning */
+        [role="menu"] {
+            z-index: 9999 !important;
+            position: absolute !important;
+        }
+
+        /* Fix table overflow to allow dropdown to show */
+        .fi-section-content-ctn {
+            overflow: visible !important;
+        }
+
+        table tbody {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
 
     <script>
         document.addEventListener('livewire:initialized', () => {
