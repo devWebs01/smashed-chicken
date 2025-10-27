@@ -16,7 +16,7 @@ class CreateOrder extends CreateRecord
     public function getBreadcrumbs(): array
     {
         return [
-            url('/admin') => 'Dashboard',
+            url('/admin') => 'Dasbor',
             static::getResource()::getUrl() => static::getResource()::getNavigationLabel(),
             static::getUrl() => $this->getHeading(),
         ];

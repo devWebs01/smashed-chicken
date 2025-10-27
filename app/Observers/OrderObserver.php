@@ -5,15 +5,19 @@ namespace App\Observers;
 use App\Models\Device;
 use App\Models\Order;
 use App\Services\FonnteService;
+use App\Services\OrderNotificationService;
 use Illuminate\Support\Facades\Log;
 
 class OrderObserver
 {
     protected $fonnteService;
 
-    public function __construct(FonnteService $fonnteService)
+    protected $notificationService;
+
+    public function __construct(FonnteService $fonnteService, OrderNotificationService $notificationService)
     {
         $this->fonnteService = $fonnteService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -65,7 +69,14 @@ class OrderObserver
      */
     public function updated(Order $order): void
     {
-        //
+        // Check if status was changed
+        if ($order->wasChanged('status')) {
+            $oldStatus = $order->getOriginal('status');
+            $newStatus = $order->status;
+
+            // Send notification for status change
+            $this->notificationService->notifyStatusChange($order, $oldStatus, $newStatus);
+        }
     }
 
     /**

@@ -15,7 +15,7 @@ class ListOrders extends ListRecords
     public function getBreadcrumbs(): array
     {
         return [
-            url('/admin') => 'Dashboard',
+            url('/admin') => 'Dasbor',
             static::getUrl() => $this->getHeading(),
         ];
     }

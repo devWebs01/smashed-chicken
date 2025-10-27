@@ -34,7 +34,7 @@ class ManageSettings extends Page implements HasForms
     public function getBreadcrumbs(): array
     {
         return [
-            url('/admin') => 'Dashboard',
+            url('/admin') => 'Dasbor',
             static::getUrl() => $this->getTitle(),
         ];
     }

@@ -18,7 +18,7 @@ class ViewOrder extends ViewRecord
     public function getBreadcrumbs(): array
     {
         return [
-            url('/admin') => 'Dashboard',
+            url('/admin') => 'Dasbor',
             static::getResource()::getUrl() => static::getResource()::getNavigationLabel(),
             static::getUrl(['record' => $this->getRecord()]) => 'Lihat Pesanan',
         ];

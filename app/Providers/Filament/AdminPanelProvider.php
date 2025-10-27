@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->passwordReset()
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -36,11 +37,17 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
+                \App\Filament\Pages\Reports::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+                \App\Filament\Widgets\OrdersStatsOverview::class,
+                \App\Filament\Widgets\RevenueChart::class,
+                \App\Filament\Widgets\PopularProductsChart::class,
+                \App\Filament\Widgets\OrderStatusChart::class,
+                \App\Filament\Widgets\RecentOrders::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -58,12 +65,12 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             ->plugins([
-                FilamentDeveloperLoginsPlugin::make()
-                    ->enabled(app()->environment('local'))
-                    ->users([
-                        'Admin' => 'admin@testing.com',
-                        // 'User' => 'user@testing.com',
-                    ]),
+                // FilamentDeveloperLoginsPlugin::make()
+                //     ->enabled(app()->environment('local'))
+                //     ->users([
+                //         'Admin' => 'admin@testing.com',
+                //         // 'User' => 'user@testing.com',
+                //     ]),
             ])
             ->sidebarCollapsibleOnDesktop()
             ->viteTheme('resources/css/filament/admin/theme.css');

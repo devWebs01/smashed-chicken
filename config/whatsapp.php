@@ -38,7 +38,7 @@ return [
         'no_pending_orders' => 'Anda tidak memiliki pesanan pending.',
         'invalid_order_index' => 'Nomor pesanan tidak valid.',
         'order_cancelled_success' => 'Pesanan #{id} telah dibatalkan.',
-        'products_added' => 'Produk berhasil ditambahkan ke Order #{id}:'."\n".'{items}'."\n\n".'Total sekarang: Rp {total}'."\n\n".'Untuk menambah produk lagi, kirim nomor/format produk sekarang.'."\n".'Ketik *selesai* untuk selesai atau *tambah* untuk order baru.',
+        'products_added' => "*Produk Berhasil Ditambahkan!*\n\n{items}\n\n*Total Sekarang: Rp {total}*\n\n📝 *Cara Menambah Lagi:*\n• Kirim nomor produk (contoh: *1* untuk 1 porsi)\n• Atau nomor=jumlah (contoh: *1=3* untuk 3 porsi)\n• Multiple produk: *1=2, 2=1*\n\n✅ Ketik *selesai* untuk lanjut ke pembayaran\n🔄 Ketik *menu* untuk lihat menu lagi",
         'order_complete' => "Order selesai. Terima kasih!\nKetik *menu* jika ingin pesan lagi.",
         'reset_done' => "Data cache direset. Silakan mulai dari awal.\nKetik *halo* untuk perkenalan.",
         'delivery_prompt' => "Pilih metode pengiriman:\n- Ketik *takeaway* untuk ambil sendiri\n- Ketik *delivery* untuk diantar",
@@ -46,9 +46,15 @@ return [
         'payment_prompt' => "Pilih metode pembayaran:\n- Ketik *cash* untuk bayar tunai\n- Ketik *transfer* untuk transfer bank",
         'final_review' => "*Review Pesanan Akhir:*\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nKetik *ya*, *y*, *yes*, *ok* untuk konfirmasi akhir\nKetik *edit*, *ubah* untuk mengubah pesanan.",
         'review' => "*Review Pesanan Anda:*\n\n{items}\n*Total Keseluruhan: Rp {total}*\n\nApakah sudah benar?\n- Ketik *ya*, *y*, *yes*, *ok* untuk konfirmasi pesanan\n- Ketik *edit*, *ubah* untuk ubah pesanan\n- Ketik *menu* untuk lihat menu lagi",
-        'default_reply' => "Maaf, pesan Anda tidak dapat dipahami.\n\nKetik *menu* untuk melihat daftar produk kami.\n\n*Cara Pemesanan:*\n- Untuk 1 produk: Ketik nomor produk\n   Contoh: *1* (1 porsi produk 1)\n- Untuk jumlah lebih: nomor=jumlah\n   Contoh: *1=3* (3 porsi produk 1)\n- Untuk multiple produk dengan qty sama: 1,2=3 (produk 1 dan 2 masing-masing 3 porsi)\n   Contoh: *1,2=2* (2 porsi produk 1 + 2 porsi produk 2)\n- Untuk multiple dengan qty berbeda: pisahkan dengan spasi\n   Contoh: *1=2 3=1 12=2,4* (2 porsi produk 1, 1 porsi produk 3, 2 porsi produk 12, 1 porsi produk 4)\n\n*Perintah Lain:*\n- *tambah* - Tambah produk ke pesanan terakhir\n- *batal* - Lihat pesanan pending untuk dibatalkan\n- *ya* - Konfirmasi pesanan\n- *edit* - Batalkan pesanan dan mulai ulang\n\nSilakan coba lagi atau ketik: *menu*",
+        'default_reply' => "🤔 Maaf, pesan Anda tidak dapat dipahami.\n\n📋 Ketik *menu* untuk melihat daftar produk kami.\n\n📝 *CARA PEMESANAN:*\n\n• *1 produk:* Ketik nomor produk\n   Contoh: *1* (1 porsi Ayam Geprek Original)\n\n• *Jumlah lebih:* nomor=jumlah\n   Contoh: *1=3* (3 porsi Ayam Geprek Original)\n\n• *Multiple produk:* pisahkan dengan koma\n   Contoh: *1=2, 2=1* (2 porsi produk 1 + 1 porsi produk 2)\n\n• *Qty berbeda:* pisahkan dengan spasi\n   Contoh: *1=2 3=1 5=2* (2 porsi produk 1, 1 porsi produk 3, 2 porsi produk 5)\n\n🔧 *PERINTAH LAIN:*\n• *menu* - Lihat daftar produk\n• *ya* - Konfirmasi pesanan\n• *edit* - Batalkan dan mulai ulang\n• *batal* - Lihat pesanan pending\n\nSilakan coba lagi! 😊",
         'pending_orders' => "*Pesanan Pending Anda:*\n\n{orders}\nKetik *batal [nomor]* untuk membatalkan pesanan.\nContoh: *batal 1*",
         'last_order' => "*Pesanan Terakhir Anda:*\n\nOrder #{id} - Total: Rp {total}\n{items}\n\nKirim produk tambahan dengan format yang sama.\nContoh: *3=1* untuk tambah 1 porsi produk 3",
+
+        // Status change notifications
+        'status_processing' => "*📋 Pesanan Sedang Diproses*\n\nOrder #{order_id}\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nPesanan Anda sedang disiapkan. Kami akan memberitahu ketika siap diantar.",
+        'status_completed' => "*✅ Pesanan Selesai*\n\nOrder #{order_id}\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nPesanan Anda telah selesai! Terima kasih telah memesan.",
+        'status_cancelled' => "*❌ Pesanan Dibatalkan*\n\nOrder #{order_id}\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nMaaf, pesanan Anda telah dibatalkan. Silakan hubungi kami untuk informasi lebih lanjut.",
+        'status_confirm' => "*✅ Pesanan Dikonfirmasi*\n\nOrder #{order_id}\n\n{items}\nPengiriman: {delivery}\nAlamat: {address}\nPembayaran: {payment}\n*Total: Rp {total}*\n\nPesanan Anda telah dikonfirmasi dan akan segera diproses.",
     ],
 
     'cache_ttl' => [

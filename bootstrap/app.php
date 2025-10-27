@@ -14,6 +14,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhook/whatsapp',
         ]);
+
+        // Trust all proxies for Cloudflare Tunnel
+        // This allows Laravel to properly detect HTTPS and forwarded headers
+        $middleware->trustProxies(
+            at: '*',
+            headers: Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
+                Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
+                Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
+                Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO |
+                Illuminate\Http\Request::HEADER_X_FORWARDED_AWS_ELB
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
