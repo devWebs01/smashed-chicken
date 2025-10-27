@@ -38,6 +38,14 @@ Selamat datang di dokumentasi lengkap sistem pemesanan via WhatsApp!
   - Perbandingan sebelum/sesudah
   - Summary implementasi
 
+- **[RUNNING-APP.md](RUNNING-APP.md)** 🆕
+  
+  Panduan menjalankan aplikasi:
+  - Development normal (tanpa Docker)
+  - Development dengan Docker Sail
+  - Switching antar mode
+  - Troubleshooting database issues
+
 ---
 
 ## 🎯 Mulai dari Mana?

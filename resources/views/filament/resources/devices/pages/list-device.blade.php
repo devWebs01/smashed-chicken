@@ -578,10 +578,10 @@ $testWebhook = action(function () {
                                             </x-slot>
 
                                             <x-filament::dropdown.list class="z-[9999]">
-                                                <x-filament::dropdown.list.item
+                                                {{-- <x-filament::dropdown.list.item
                                                     wire:click="copyToClipboard('{{ $device['token'] }}')">
                                                     Copy Token
-                                                </x-filament::dropdown.list.item>
+                                                </x-filament::dropdown.list.item> --}}
                                                 @if ($device['status'] === 'connect')
                                                     <x-filament::dropdown.list.item
                                                         wire:click="disconnectDevice('{{ data_get($device, 'token') ?? '' }}')"
@@ -595,11 +595,11 @@ $testWebhook = action(function () {
                                                         Connect
                                                     </x-filament::dropdown.list.item>
                                                 @endif
-                                                <x-filament::dropdown.list.item
+                                                {{-- <x-filament::dropdown.list.item
                                                     wire:click="requestDeleteOtp('{{ $device['token'] }}')"
                                                     size="xs">
                                                     Delete
-                                                </x-filament::dropdown.list.item>
+                                                </x-filament::dropdown.list.item> --}}
                                             </x-filament::dropdown.list>
                                         </x-filament::dropdown>
 
