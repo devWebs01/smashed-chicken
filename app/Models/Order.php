@@ -28,10 +28,15 @@ class Order extends Model
 
     // Status constants
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
+
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_CONFIRM = 'confirm';
 
     public function orderItems()

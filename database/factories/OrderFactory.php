@@ -36,7 +36,7 @@ class OrderFactory extends Factory
                 Order::STATUS_COMPLETED,
                 Order::STATUS_CANCELLED,
                 Order::STATUS_DRAFT,
-                Order::STATUS_CONFIRM
+                Order::STATUS_CONFIRM,
             ]),
             'order_date_time' => $this->faker->dateTimeBetween('-1 month', 'now'),
             'payment_method' => $this->faker->randomElement(['cash', 'qris', 'transfer']),
@@ -89,8 +89,6 @@ class OrderFactory extends Factory
 
     /**
      * Indicate that the order is completed.
-     *
-     * @return static
      */
     public function completed(): static
     {
@@ -101,8 +99,6 @@ class OrderFactory extends Factory
 
     /**
      * Indicate that the order is pending.
-     *
-     * @return static
      */
     public function pending(): static
     {
@@ -113,8 +109,6 @@ class OrderFactory extends Factory
 
     /**
      * Indicate that the order is processing.
-     *
-     * @return static
      */
     public function processing(): static
     {
@@ -125,8 +119,6 @@ class OrderFactory extends Factory
 
     /**
      * Indicate that the order is cancelled.
-     *
-     * @return static
      */
     public function cancelled(): static
     {
@@ -137,8 +129,6 @@ class OrderFactory extends Factory
 
     /**
      * Indicate that the order is for delivery.
-     *
-     * @return static
      */
     public function delivery(): static
     {
@@ -150,8 +140,6 @@ class OrderFactory extends Factory
 
     /**
      * Indicate that the order is for dine-in.
-     *
-     * @return static
      */
     public function dineIn(): static
     {
@@ -162,8 +150,6 @@ class OrderFactory extends Factory
 
     /**
      * Indicate that the order is for takeaway.
-     *
-     * @return static
      */
     public function takeaway(): static
     {
