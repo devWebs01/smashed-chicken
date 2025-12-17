@@ -3,10 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use BezhanSalleh\FilamentShield\Support\Utils;
 use Spatie\Permission\PermissionRegistrar;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class ShieldSeeder extends Seeder
 {
@@ -14,87 +12,57 @@ class ShieldSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Clear existing permissions and roles
-        DB::table('role_has_permissions')->delete();
-        DB::table('model_has_roles')->delete();
-        DB::table('model_has_permissions')->delete();
-        DB::table('permissions')->delete();
-        DB::table('roles')->delete();
+        $rolesWithPermissions = '[{"name":"super_admin","guard_name":"web","permissions":["ViewAny:Device","View:Device","Create:Device","Update:Device","Delete:Device","Restore:Device","ForceDelete:Device","ForceDeleteAny:Device","RestoreAny:Device","Replicate:Device","Reorder:Device","ViewAny:Order","View:Order","Create:Order","Update:Order","Delete:Order","Restore:Order","ForceDelete:Order","ForceDeleteAny:Order","RestoreAny:Order","Replicate:Order","Reorder:Order","ViewAny:Product","View:Product","Create:Product","Update:Product","Delete:Product","Restore:Product","ForceDelete:Product","ForceDeleteAny:Product","RestoreAny:Product","Replicate:Product","Reorder:Product","ViewAny:Role","View:Role","Create:Role","Update:Role","Delete:Role","Restore:Role","ForceDelete:Role","ForceDeleteAny:Role","RestoreAny:Role","Replicate:Role","Reorder:Role","ViewAny:User","View:User","Create:User","Update:User","Delete:User","Restore:User","ForceDelete:User","ForceDeleteAny:User","RestoreAny:User","Replicate:User","Reorder:User","View:Dashboard","View:ManageSettings","View:Reports","View:OrdersPerDayChart","View:OrdersStatsOverview","View:RevenueChart","View:PopularProductsChart","View:OrderStatusChart","View:RecentOrders"]},{"name":"kasir","guard_name":"web","permissions":["ViewAny:Order","View:Order","Create:Order","Update:Order","Delete:Order","Restore:Order","ForceDelete:Order","ForceDeleteAny:Order","RestoreAny:Order","Replicate:Order","Reorder:Order","ViewAny:Product","View:Product","Create:Product","Update:Product","Delete:Product","Restore:Product","ForceDelete:Product","ForceDeleteAny:Product","RestoreAny:Product","Replicate:Product","Reorder:Product","View:Dashboard","View:Reports","View:OrdersPerDayChart","View:OrdersStatsOverview","View:RevenueChart","View:PopularProductsChart","View:OrderStatusChart","View:RecentOrders"]}]';
+        $directPermissions = '[]';
 
-        // Generate permissions based on existing resources
-        $this->generatePermissions();
-
-        // Create roles and assign permissions
-        $this->createRolesAndAssignPermissions();
+        static::makeRolesWithPermissions($rolesWithPermissions);
+        static::makeDirectPermissions($directPermissions);
 
         $this->command->info('Shield Seeding Completed.');
-        $this->command->info('Created roles: pemilik (super_admin), kasir');
     }
 
-    protected function generatePermissions(): void
+    protected static function makeRolesWithPermissions(string $rolesWithPermissions): void
     {
-        // Manual create permissions karena shield:generate tidak menyimpan ke database
-        $resources = [
-            'Product' => ['viewAny', 'view', 'create', 'update', 'delete', 'restore', 'forceDelete', 'replicate', 'reorder'],
-            'Order' => ['viewAny', 'view', 'create', 'update', 'delete', 'restore', 'forceDelete', 'replicate', 'reorder'],
-            'User' => ['viewAny', 'view', 'create', 'update', 'delete', 'restore', 'forceDelete', 'replicate', 'reorder'],
-            'Role' => ['viewAny', 'view', 'create', 'update', 'delete', 'restore', 'forceDelete', 'replicate', 'reorder'],
-            'Device' => ['viewAny', 'view', 'create', 'update', 'delete', 'restore', 'forceDelete', 'replicate', 'reorder'],
-        ];
+        if (! blank($rolePlusPermissions = json_decode($rolesWithPermissions, true))) {
+            /** @var Model $roleModel */
+            $roleModel = Utils::getRoleModel();
+            /** @var Model $permissionModel */
+            $permissionModel = Utils::getPermissionModel();
 
-        foreach ($resources as $resource => $actions) {
-            foreach ($actions as $action) {
-                $permissionName = "{$action}:{$resource}";
-                Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'web']);
+            foreach ($rolePlusPermissions as $rolePlusPermission) {
+                $role = $roleModel::firstOrCreate([
+                    'name' => $rolePlusPermission['name'],
+                    'guard_name' => $rolePlusPermission['guard_name'],
+                ]);
+
+                if (! blank($rolePlusPermission['permissions'])) {
+                    $permissionModels = collect($rolePlusPermission['permissions'])
+                        ->map(fn ($permission) => $permissionModel::firstOrCreate([
+                            'name' => $permission,
+                            'guard_name' => $rolePlusPermission['guard_name'],
+                        ]))
+                        ->all();
+
+                    $role->syncPermissions($permissionModels);
+                }
             }
         }
-
-        // Page permissions
-        Permission::firstOrCreate(['name' => 'view:Dashboard', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'view:Reports', 'guard_name' => 'web']);
     }
 
-    protected function createRolesAndAssignPermissions(): void
+    public static function makeDirectPermissions(string $directPermissions): void
     {
-        // Pemilik (Owner) - sebagai super_admin yang bisa mengelola semuanya
-        $pemilik = Role::firstOrCreate(['name' => 'pemilik', 'guard_name' => 'web']);
+        if (! blank($permissions = json_decode($directPermissions, true))) {
+            /** @var Model $permissionModel */
+            $permissionModel = Utils::getPermissionModel();
 
-        // Pemilik mendapatkan semua permissions
-        $pemilik->syncPermissions(Permission::all());
-
-        // Kasir (Cashier) - bisa mengelola produk, pemesanan, dan laporan
-        $kasir = Role::firstOrCreate(['name' => 'kasir', 'guard_name' => 'web']);
-
-        // Kasir permissions - menggunakan format yang sudah digenerate oleh shield
-        $kasirPermissions = [
-            // Product Management - full access untuk mengelola produk
-            'viewAny:Product',
-            'view:Product',
-            'create:Product',
-            'update:Product',
-            'delete:Product',
-            'replicate:Product',
-            'reorder:Product',
-
-            // Order Management - full access untuk mengelola pemesanan
-            'viewAny:Order',
-            'view:Order',
-            'create:Order',
-            'update:Order',
-            'delete:Order',
-            'replicate:Order',
-            'reorder:Order',
-
-            // Report permissions - bisa melihat laporan
-            'view:Dashboard',
-            'view:Reports',
-
-            // View users (hanya view, tidak bisa edit/hapus)
-            'viewAny:User',
-            'view:User',
-        ];
-
-        // Sync permissions untuk kasir
-        $kasir->syncPermissions($kasirPermissions);
+            foreach ($permissions as $permission) {
+                if ($permissionModel::whereName($permission)->doesntExist()) {
+                    $permissionModel::create([
+                        'name' => $permission['name'],
+                        'guard_name' => $permission['guard_name'],
+                    ]);
+                }
+            }
+        }
     }
 }

@@ -20,24 +20,24 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
         ]);
 
-        // Create pemilik (owner) user - sebagai super_admin
-        $pemilik = User::factory()->create([
-            'name' => 'Pemilik',
-            'email' => 'pemilik@geprek.com',
+        // Create super_admin user
+        $superAdmin = User::factory()->create([
+            'name' => 'Super Admin',
+            'email' => 'pemilik@testing.com',
             'password' => bcrypt('password'), // Default password: password
         ]);
-        $pemilik->assignRole('pemilik');
+        $superAdmin->assignRole('super_admin');
 
         // Create kasir (cashier) user
         $kasir = User::factory()->create([
             'name' => 'Kasir',
-            'email' => 'kasir@geprek.com',
+            'email' => 'kasir@testing.com',
             'password' => bcrypt('password'), // Default password: password
         ]);
         $kasir->assignRole('kasir');
 
         $this->command->info('Users created:');
-        $this->command->info('1. Pemilik (Owner) - Email: pemilik@geprek.com, Password: password');
-        $this->command->info('2. Kasir (Cashier) - Email: kasir@geprek.com, Password: password');
+        $this->command->info('1. Super Admin - Email: super_admin@testing.com, Password: password');
+        $this->command->info('2. Kasir (Cashier) - Email: kasir@testing.com, Password: password');
     }
 }
