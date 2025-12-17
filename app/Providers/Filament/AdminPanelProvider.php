@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use DutchCodingCompany\FilamentDeveloperLogins\FilamentDeveloperLoginsPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -71,6 +72,8 @@ class AdminPanelProvider extends PanelProvider
                 //         'Admin' => 'admin@testing.com',
                 //         // 'User' => 'user@testing.com',
                 //     ]),
+                FilamentShieldPlugin::make()
+                    ->navigationGroup('Manajemen Data'),
             ])
             ->sidebarCollapsibleOnDesktop()
             ->viteTheme('resources/css/filament/admin/theme.css');
