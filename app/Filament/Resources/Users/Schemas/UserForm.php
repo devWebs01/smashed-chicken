@@ -31,9 +31,9 @@ class UserForm
 
                             ->password()
                             ->required()
-                            ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null) // hanya simpan kalau diisi
-                            ->dehydrated(fn($state) => filled($state)) // kalau kosong, jangan update field
-                            ->required(fn(string $context): bool => $context === 'create') // wajib saat create saja
+                            ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null) // hanya simpan kalau diisi
+                            ->dehydrated(fn ($state) => filled($state)) // kalau kosong, jangan update field
+                            ->required(fn (string $context): bool => $context === 'create') // wajib saat create saja
                         ,
                         Select::make('roles')
                             ->relationship('roles', 'name')
