@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
         $kasir->assignRole('kasir');
 
         $this->command->info('Users created:');
-        $this->command->info('1. Super Admin - Email: super_admin@testing.com, Password: password');
+        $this->command->info('1. Super Admin - Email: pemilik@testing.com, Password: password');
         $this->command->info('2. Kasir (Cashier) - Email: kasir@testing.com, Password: password');
     }
 }
