@@ -230,7 +230,7 @@ erDiagram
       ./update_ngrok.sh
       ```
       
-    - Salin URL webhook dan tempelkan ke pengaturan webhook di [Dasbor Fonnte](https://fonnte.com/device) Anda.
+    - Salin URL webhook dan tempelkan ke pengaturan webhook di [Dasbor Fonnte](https://md.fonnte.com/new/device.php) Anda.
 
     📚 **Lihat:** [Panduan Cloudflare Tunnel](documentation/QUICK-START-CLOUDFLARE.md) atau [Panduan ngrok](documentation/NGROK-SETUP.md)
 
