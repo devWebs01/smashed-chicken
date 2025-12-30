@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,13 +21,20 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
         ]);
 
+        $superAdminRole = Role::firstOrCreate([
+            'name' => 'super_admin',
+            'guard_name' => 'web',
+        ]);
+
         // Create super_admin user
         $superAdmin = User::factory()->create([
             'name' => 'Super Admin',
             'email' => 'pemilik@testing.com',
             'password' => bcrypt('password'), // Default password: password
         ]);
-        $superAdmin->assignRole('super_admin');
+        if (! $superAdmin->hasRole('super_admin')) {
+            $superAdmin->assignRole($superAdminRole);
+        }
 
         // Create kasir (cashier) user
         $kasir = User::factory()->create([
@@ -34,7 +42,15 @@ class DatabaseSeeder extends Seeder
             'email' => 'kasir@testing.com',
             'password' => bcrypt('password'), // Default password: password
         ]);
-        $kasir->assignRole('kasir');
+
+        $kasirRole = Role::firstOrCreate([
+            'name' => 'kasir',
+            'guard_name' => 'web',
+        ]);
+
+        if (! $kasir->hasRole('kasir')) {
+            $kasir->assignRole($kasirRole);
+        }
 
         $this->command->info('Users created:');
         $this->command->info('1. Super Admin - Email: pemilik@testing.com, Password: password');

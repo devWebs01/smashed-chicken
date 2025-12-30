@@ -395,8 +395,8 @@ $testWebhook = action(function () {
                                 class="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
                             <div>
                                 <p class="font-medium">Buka Fonnte Dashboard</p>
-                                <p class="text-gray-600">Kunjungi <a href="https://fonnte.com/device" target="_blank"
-                                        class="text-blue-600 underline">https://fonnte.com/device</a></p>
+                                <p class="text-gray-600">Kunjungi <a href="https://md.fonnte.com/new/device.php" target="_blank"
+                                        class="text-blue-600 underline">https://md.fonnte.com/new/device.php</a></p>
                             </div>
                         </div>
 
