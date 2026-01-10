@@ -13,6 +13,8 @@ class RecentOrders extends BaseWidget
 
     protected int|string|array $columnSpan = 'full';
 
+    protected static bool $isLazy = true;
+
     public function getHeading(): string
     {
         return 'Pesanan Terbaru';
@@ -23,9 +25,12 @@ class RecentOrders extends BaseWidget
         return $table
             ->query(
                 Order::query()
-                    ->with(['orderItems.product' => function ($query) {
-                        $query->select('id', 'name');
-                    }, 'device'])
+                    ->with([
+                        'orderItems.product' => function ($query) {
+                            $query->select('id', 'name');
+                        },
+                        'device',
+                    ])
                     ->latest()
                     ->limit(10)
             )

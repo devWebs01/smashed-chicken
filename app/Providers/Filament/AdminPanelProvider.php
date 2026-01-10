@@ -35,7 +35,11 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->brandName(Setting::first()->name ?? 'Geprek')
+            ->brandName(
+                cache()->remember('app.setting.name', now()->addDay(), function () {
+                    return Setting::first()?->name ?? 'Geprek';
+                })
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -71,19 +75,22 @@ class AdminPanelProvider extends PanelProvider
                 FilamentDeveloperLoginsPlugin::make()
                     ->enabled(app()->environment('local'))
                     ->users(function () {
-                        // Mengambil satu user pertama untuk setiap role yang diinginkan
-                        $roles = ['super_admin', 'kasir'];
-                        $devUsers = [];
+                        return cache()->remember('dev-login-users', 3600, function () {
+                            $roles = ['super_admin', 'kasir'];
+                            $users = \App\Models\User::whereHas('roles', function ($query) use ($roles) {
+                                $query->whereIn('name', $roles);
+                            })->with('roles:id,name')->get();
 
-                        foreach ($roles as $role) {
-                            $user = \App\Models\User::role($role)->first();
-                            if ($user) {
-                                // Format: 'Nama Role (Nama User)' => 'email@user.com'
-                                $devUsers[ucfirst($role)] = $user->email;
+                            $devUsers = [];
+                            foreach ($users as $user) {
+                                $role = $user->roles->first()?->name;
+                                if ($role) {
+                                    $devUsers[ucfirst($role)] = $user->email;
+                                }
                             }
-                        }
 
-                        return $devUsers;
+                            return $devUsers;
+                        });
                     }),
                 FilamentShieldPlugin::make()
                     ->navigationGroup('Manajemen Data'),
