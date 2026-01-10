@@ -348,11 +348,11 @@ $closeSuccessModal = function () {
                                     <p class="text-zinc-800 text-3xl font-medium">{{ formatRupiah($product->price) }}
                                     </p>
                                 </div>
-                                <div class="flex mx-auto items-center justify-between w-full mt-5">
+                                {{-- <div class="flex mx-auto items-center justify-between w-full mt-5">
                                     <button wire:click="addToCart({{ $product->id }})"
                                         class="px-5 mx-auto py-2 bg-orange-500 rounded-full text-white text-sm font-semibold hover:bg-orange-600">Beli
                                         Sekarang</button>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                     @endforeach

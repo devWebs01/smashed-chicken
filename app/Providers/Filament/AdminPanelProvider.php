@@ -34,7 +34,8 @@ class AdminPanelProvider extends PanelProvider
             ->passwordReset()
             ->colors([
                 'primary' => Color::Amber,
-            ])->brandName(Setting::first()->name)
+            ])
+            ->brandName(Setting::first()->name ?? 'Geprek')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -67,12 +68,23 @@ class AdminPanelProvider extends PanelProvider
             ])
 
             ->plugins([
-                // FilamentDeveloperLoginsPlugin::make()
-                //     ->enabled(app()->environment('local'))
-                //     ->users([
-                //         'Admin' => 'admin@testing.com',
-                //         // 'User' => 'user@testing.com',
-                //     ]),
+                FilamentDeveloperLoginsPlugin::make()
+                    ->enabled(app()->environment('local'))
+                    ->users(function () {
+                        // Mengambil satu user pertama untuk setiap role yang diinginkan
+                        $roles = ['super_admin', 'kasir'];
+                        $devUsers = [];
+
+                        foreach ($roles as $role) {
+                            $user = \App\Models\User::role($role)->first();
+                            if ($user) {
+                                // Format: 'Nama Role (Nama User)' => 'email@user.com'
+                                $devUsers[ucfirst($role)] = $user->email;
+                            }
+                        }
+
+                        return $devUsers;
+                    }),
                 FilamentShieldPlugin::make()
                     ->navigationGroup('Manajemen Data'),
             ])
