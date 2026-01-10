@@ -11,14 +11,14 @@ class RecentOrders extends BaseWidget
 {
     protected static ?int $sort = 5;
 
-    protected int|string|array $columnSpan = 'full';
-
-    protected static bool $isLazy = true;
-
     public function getHeading(): string
     {
         return 'Pesanan Terbaru';
     }
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected static bool $isLazy = true;
 
     public function table(Table $table): Table
     {
@@ -85,39 +85,6 @@ class RecentOrders extends BaseWidget
                         default => ucfirst($state),
                     }),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Waktu Pesan')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('orderItems')
-                    ->label('Items')
-                    ->listWithLineBreaks()
-                    ->limitList(2)
-                    ->formatStateUsing(function ($state) {
-                        if (! $state) {
-                            return '-';
-                        }
-
-                        $items = collect($state);
-                        if ($items->isEmpty()) {
-                            return '-';
-                        }
-
-                        return $items->map(function ($item) {
-                            // Debug: check if item is what we expect
-                            if (! is_object($item) || ! isset($item->quantity)) {
-                                return 'Item Invalid';
-                            }
-
-                            $productName = 'Produk Tidak Ditemukan';
-                            if (isset($item->product) && is_object($item->product) && isset($item->product->name)) {
-                                $productName = $item->product->name;
-                            }
-
-                            return $productName.' x'.$item->quantity;
-                        })->join(', ');
-                    }),
             ])
             ->defaultSort('created_at', 'desc')
             ->striped();

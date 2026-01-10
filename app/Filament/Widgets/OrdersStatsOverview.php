@@ -63,7 +63,7 @@ class OrdersStatsOverview extends BaseWidget
                 ->color('gray'),
 
             Stat::make('Pesanan Selesai', $completedToday)
-                ->description($pendingToday > 0 ? "$pendingToday pending hari ini" : 'Semua selesai')
+                ->description($pendingToday > 0 ? "$pendingToday menunggu persetujuan hari ini" : 'Semua selesai')
                 ->descriptionIcon($pendingToday === 0 ? 'heroicon-m-check-circle' : 'heroicon-m-clock')
                 ->color($pendingToday === 0 ? 'success' : 'warning'),
 

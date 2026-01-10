@@ -6,7 +6,7 @@ use App\Models\{Order, Setting};
 state([
     'record' => fn() => request()->route('record'),
     'order' => fn() => Order::with(['orderItems'])->findOrFail(request()->route('record')),
-    'status' => fn() => $order->status ?? 'draft',
+    'status' => fn() => Order::findOrFail(request()->route('record'))->status ?? 'draft',
     'setting' => fn() => Setting::first(),
 ]);
 ?>

@@ -57,9 +57,11 @@ class Reports extends Page implements HasTable
         return Order::query()
             ->when($this->startDate, fn ($query) => $query->whereDate('created_at', '>=', $this->startDate))
             ->when($this->endDate, fn ($query) => $query->whereDate('created_at', '<=', $this->endDate))
-            ->with(['orderItems.product' => function ($query) {
-                $query->select('id', 'name'); // Only load necessary columns
-            }]);
+            ->with([
+                'orderItems.product' => function ($query) {
+                    $query->select('id', 'name'); // Only load necessary columns
+                },
+            ]);
     }
 
     public function table(Table $table): Table
@@ -89,19 +91,20 @@ class Reports extends Page implements HasTable
                     ->label('Tipe')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'delivery' => 'warning',
-                        'takeaway' => 'success',
-                        default => 'gray',
+                        'delivery' => 'Pengiriman',
+                        'takeaway' => 'Bawa Pulang',
+                        'dine_in' => 'Makan di Tempat',
+                        default => $state,
                     }),
 
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'completed' => 'success',
-                        'pending' => 'warning',
-                        'cancelled' => 'danger',
-                        default => 'gray',
+                        'completed' => 'Selesai',
+                        'pending' => 'Tertunda',
+                        'cancelled' => 'Dibatalkan',
+                        default => $state,
                     }),
 
                 TextColumn::make('orderItems')

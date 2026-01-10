@@ -395,7 +395,8 @@ $testWebhook = action(function () {
                                 class="flex-shrink-0 w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
                             <div>
                                 <p class="font-medium">Buka Fonnte Dashboard</p>
-                                <p class="text-gray-600">Kunjungi <a href="https://md.fonnte.com/new/device.php" target="_blank"
+                                <p class="text-gray-600">Kunjungi <a href="https://md.fonnte.com/new/device.php"
+                                        target="_blank"
                                         class="text-blue-600 underline">https://md.fonnte.com/new/device.php</a></p>
                             </div>
                         </div>
@@ -431,7 +432,7 @@ $testWebhook = action(function () {
             @endif
 
             {{-- Webhook Info --}}
-            <x-filament::section icon="heroicon-o-globe-alt" >
+            <x-filament::section icon="heroicon-o-globe-alt">
                 <x-slot name="heading">
                     Webhook Configuration
                 </x-slot>
@@ -484,19 +485,19 @@ $testWebhook = action(function () {
                                 <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
                                     <p
                                         class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                                        Name
+                                        Nama
                                     </p>
                                 </th>
                                 <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
                                     <p
                                         class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                                        Phone
+                                        Telepon
                                     </p>
                                 </th>
                                 <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
                                     <p
                                         class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                                        Qouta
+                                        Kuota
                                     </p>
                                 </th>
                                 <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
@@ -514,7 +515,7 @@ $testWebhook = action(function () {
                                 <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
                                     <p
                                         class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                                        Action
+                                        Aksi
                                     </p>
                                 </th>
                             </tr>
@@ -580,25 +581,25 @@ $testWebhook = action(function () {
                                             <x-filament::dropdown.list class="z-[9999]">
                                                 {{-- <x-filament::dropdown.list.item
                                                     wire:click="copyToClipboard('{{ $device['token'] }}')">
-                                                    Copy Token
+                                                    Salin Token
                                                 </x-filament::dropdown.list.item> --}}
                                                 @if ($device['status'] === 'connect')
                                                     <x-filament::dropdown.list.item
                                                         wire:click="disconnectDevice('{{ data_get($device, 'token') ?? '' }}')"
                                                         class="disconnectButton"
                                                         data-device-token="{{ $device['token'] }}">
-                                                        Disconnect
+                                                        Putuskan
                                                     </x-filament::dropdown.list.item>
                                                 @else
                                                     <x-filament::dropdown.list.item
                                                         wire:click="activateDevice('{{ $device['device'] }}', '{{ $device['token'] }}')">
-                                                        Connect
+                                                        Hubungkan
                                                     </x-filament::dropdown.list.item>
                                                 @endif
                                                 {{-- <x-filament::dropdown.list.item
                                                     wire:click="requestDeleteOtp('{{ $device['token'] }}')"
                                                     size="xs">
-                                                    Delete
+                                                    Hapus
                                                 </x-filament::dropdown.list.item> --}}
                                             </x-filament::dropdown.list>
                                         </x-filament::dropdown>

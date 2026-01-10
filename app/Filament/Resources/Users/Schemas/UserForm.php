@@ -36,6 +36,7 @@ class UserForm
                             ->required(fn (string $context): bool => $context === 'create') // wajib saat create saja
                         ,
                         Select::make('roles')
+                            ->label('Peran')
                             ->relationship('roles', 'name')
                             ->multiple()
                             ->preload()
