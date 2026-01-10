@@ -70,7 +70,11 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-
+            ->navigationGroups([
+                'Manajemen Akun',
+                'Manajemen Data',
+                'Manajemen Pesanan',
+            ])
             ->plugins([
                 FilamentDeveloperLoginsPlugin::make()
                     ->enabled(app()->environment('local'))
@@ -93,7 +97,9 @@ class AdminPanelProvider extends PanelProvider
                         });
                     }),
                 FilamentShieldPlugin::make()
-                    ->navigationGroup('Manajemen Data'),
+                    ->navigationLabel('Hak Akses')
+                    ->modelLabel('Hak Akses')
+                    ->navigationGroup('Manajemen Akun'),
             ])
             ->sidebarCollapsibleOnDesktop()
             ->viteTheme('resources/css/filament/admin/theme.css');
