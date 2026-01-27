@@ -16,6 +16,7 @@ class OrdersTable
     {
 
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('customer_name')
                     ->label('Nama Customer')

@@ -15,7 +15,7 @@ mount(function () {
 });
 
 $allProducts = computed(function () {
-    return Product::inRandomOrder()->paginate(6);
+    return Product::orderByDesc('created_at')->paginate(6);
 });
 
 $addToCart = function ($productId, $quantity = 1) {
