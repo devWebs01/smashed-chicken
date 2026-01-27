@@ -100,7 +100,7 @@ $addDevice = action(function () use ($fonnteService) {
 
                     </div>
                     <x-filament::button type="submit">
-                        Submit
+                        Simpan
                     </x-filament::button>
                 </form>
 

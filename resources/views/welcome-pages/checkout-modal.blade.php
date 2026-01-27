@@ -39,8 +39,8 @@
                               Pengantaran</label>
                           <select wire:model="deliveryMethod"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                              <option value="delivery">Delivery</option>
-                              <option value="takeaway">Take Away</option>
+                              <option value="delivery">Diantar</option>
+                              <option value="takeaway">Bawa Pulang</option>
                           </select>
                       </div>
 
@@ -62,8 +62,8 @@
                               Pembayaran</label>
                           <select wire:model="paymentMethod"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                              <option value="cod">Cash on Delivery (COD)</option>
-                              <option value="cash">Cash</option>
+                              <option value="cod">Bayar di Tempat (COD)</option>
+                              <option value="cash">Tunai</option>
                           </select>
                       </div>
 

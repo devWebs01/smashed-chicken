@@ -309,7 +309,19 @@ $printBill = function () {
                 <x-filament::section class="flex-1 flex flex-col justify-between">
                     <x-slot name="heading">
                         <x-filament::badge class="capitalize">
-                            {{ $record->status }}
+                            @php
+                                $statusLabels = [
+                                    'draft' => 'Draf',
+                                    'pending' => 'Menunggu',
+                                    'open' => 'Terbuka',
+                                    'confirm' => 'Dikonfirmasi',
+                                    'processing' => 'Diproses',
+                                    'completed' => 'Selesai',
+                                    'closed' => 'Tutup',
+                                    'cancelled' => 'Dibatalkan',
+                                ];
+                            @endphp
+                            {{ $statusLabels[$record->status] ?? ucfirst(str_replace('_', ' ', $record->status)) }}
                         </x-filament::badge>
 
                         <h3 class="text-lg font-semibold">

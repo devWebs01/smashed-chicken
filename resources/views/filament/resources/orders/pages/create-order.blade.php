@@ -69,7 +69,7 @@ $createOrder = function () {
                             <x-filament::input.select id="delivery_method" wire:model.defer="delivery_method">
                                 <option value="dine_in">Makan di Tempat</option>
                                 <option value="takeaway">Bawa Pulang</option>
-                                <option value="delivery">Delivery</option>
+                                <option value="delivery">Diantar</option>
                             </x-filament::input.select>
                         </x-filament::input.wrapper>
                     </div>

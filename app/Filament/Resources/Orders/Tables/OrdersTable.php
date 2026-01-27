@@ -57,7 +57,7 @@ class OrdersTable
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'dine_in' => 'Makan di Tempat',
                         'takeaway' => 'Bawa Pulang',
-                        'delivery' => 'Delivery',
+                        'delivery' => 'Diantar',
                         default => $state,
                     })
                     ->sortable()

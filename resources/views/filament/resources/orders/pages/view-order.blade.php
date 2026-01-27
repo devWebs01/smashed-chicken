@@ -65,9 +65,21 @@ state([
                                         'cancelled',
                                     ]),
                             ])>
-                                {{ ucfirst(str_replace('_', ' ', $status)) }}
+                                @php
+                                    $statusLabels = [
+                                        'draft' => 'Draf',
+                                        'pending' => 'Menunggu',
+                                        'open' => 'Terbuka',
+                                        'confirm' => 'Dikonfirmasi',
+                                        'processing' => 'Diproses',
+                                        'completed' => 'Selesai',
+                                        'closed' => 'Tutup',
+                                        'cancelled' => 'Dibatalkan',
+                                    ];
+                                @endphp
+                                {{ $statusLabels[$status] ?? ucfirst(str_replace('_', ' ', $status)) }}
                             </span>
-                            <h3 class="text-3xl font-bold text-gray-900 dark:text-gray-100">INVOICE {{ $order->id }}</h3>
+                            <h3 class="text-3xl font-bold text-gray-900 dark:text-gray-100">FAKTUR {{ $order->id }}</h3>
 
                         </div>
                     </header>

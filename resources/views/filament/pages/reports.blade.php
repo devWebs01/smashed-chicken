@@ -123,11 +123,11 @@
                 <h4 class="text-lg font-semibold mb-4">Metode Pengiriman</h4>
                 <div class="space-y-2">
                     <div class="flex justify-between">
-                        <span class="text-sm text-gray-600">Delivery</span>
+                        <span class="text-sm text-gray-600">Diantar</span>
                         <span class="font-semibold">{{ $this->getReportData()['delivery_orders'] }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-sm text-gray-600">Takeaway</span>
+                        <span class="text-sm text-gray-600">Bawa Pulang</span>
                         <span class="font-semibold">{{ $this->getReportData()['takeaway_orders'] }}</span>
                     </div>
                 </div>
