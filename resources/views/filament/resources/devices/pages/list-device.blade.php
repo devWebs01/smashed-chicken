@@ -326,6 +326,41 @@ $testWebhook = action(function () {
     }
 });
 
+// Sync devices action
+$syncDevices = action(function () {
+    try {
+        // Make AJAX request to sync endpoint using full URL
+        $url = url('/api/devices/sync');
+        $response = \Illuminate\Support\Facades\Http::timeout(30)
+            ->withHeaders([
+                'X-Requested-With' => 'XMLHttpRequest',
+                'Accept' => 'application/json',
+            ])
+            ->post($url);
+        $data = $response->json();
+
+        if ($data['success']) {
+            $message = "Sinkronisasi berhasil! {$data['data']['synced_count']} device dari {$data['data']['total_devices']} berhasil disinkronkan.";
+
+            if (!empty($data['data']['errors'])) {
+                $errorMessages = collect($data['data']['errors'])->map(fn($error) =>
+                    "{$error['device']}: {$error['error']}"
+                )->join("\n");
+                $message .= "\n\nBeberapa device mengalami error:\n{$errorMessages}";
+            }
+
+            Notification::make()->title('✅ Sinkronisasi Berhasil')->body($message)->success()->send();
+        } else {
+            Notification::make()->title('❌ Sinkronisasi Gagal')->body('Gagal sinkronisasi: ' . $data['message'])->danger()->send();
+        }
+
+        // Reload devices after sync
+        $this->reloadDevices(app(FonnteService::class));
+    } catch (\Exception $e) {
+        Notification::make()->title('❌ Error Sinkronisasi')->body('Terjadi error: ' . $e->getMessage())->danger()->send();
+    }
+});
+
 ?>
 
 <x-filament-panels::page>
@@ -457,8 +492,15 @@ $testWebhook = action(function () {
                     </div>
                 </div>
 
-                {{-- Test Webhook Button --}}
-                <div class="mt-4 flex gap-3">
+                {{-- Action Buttons --}}
+                <div class="mt-4 flex flex-wrap gap-3">
+                    {{-- Sync Button --}}
+                    <x-filament::button wire:click="syncDevices" size="sm" color="primary">
+                        <x-heroicon-o-arrow-path class="w-4 h-4 mr-2" />
+                        Sinkronkan Data
+                    </x-filament::button>
+
+                    {{-- Test Webhook Button --}}
                     <x-filament::button wire:click="$dispatch('test-webhook')" size="sm" color="gray" outlined>
                         <x-heroicon-o-paper-airplane class="w-4 h-4 mr-2" />
                         Test Webhook

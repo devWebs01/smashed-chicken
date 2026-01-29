@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 # URL webhook (bisa dari env atau parameter)
 if [ $# -eq 0 ]; then
-    WEBHOOK_URL="https://local.testingbae0000.my.id/webhook/whatsapp"
+    WEBHOOK_URL="https://local.systemwebsite.my.id/webhook/whatsapp"
 else
     WEBHOOK_URL=$1
 fi

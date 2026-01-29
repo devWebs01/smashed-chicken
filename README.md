@@ -54,7 +54,7 @@ Project ini mendukung **2 pilihan tunneling** untuk webhook development:
 ### **Option 1: Cloudflare Tunnel (RECOMMENDED)** ⭐
 
 **Keuntungan:**
-- ✅ URL static yang pendek: `local.testingbae0000.my.id`
+- ✅ URL static yang pendek: `local.systemwebsite.my.id`
 - ✅ Gratis selamanya tanpa batasan
 - ✅ Command simple dan tidak perlu diulang-ulang
 - ✅ Lebih stabil untuk webhook
@@ -67,7 +67,7 @@ php artisan serve --port=8000
 # 2. Di terminal baru, jalankan Cloudflare Tunnel
 ./cloudflare-tunnel.sh 8000
 
-# 3. Webhook URL: https://local.testingbae0000.my.id/webhook/whatsapp
+# 3. Webhook URL: https://local.systemwebsite.my.id/webhook/whatsapp
 ```
 
 📚 **[Panduan Lengkap Cloudflare Tunnel](documentation/QUICK-START-CLOUDFLARE.md)**
@@ -222,7 +222,7 @@ erDiagram
 
 6.  **Atur URL Webhook:**
     - **Untuk Cloudflare Tunnel:**
-      Webhook URL: `https://local.testingbae0000.my.id/webhook/whatsapp`
+      Webhook URL: `https://local.systemwebsite.my.id/webhook/whatsapp`
       
     - **Untuk ngrok:**
       Jalankan skrip untuk mendapatkan URL webhook:
@@ -267,7 +267,7 @@ erDiagram
 ./test-webhook.sh
 
 # Test manual
-curl https://local.testingbae0000.my.id/webhook/whatsapp
+curl https://local.systemwebsite.my.id/webhook/whatsapp
 ```
 
 **❌ "Cloudflared tidak ditemukan":**
@@ -330,7 +330,7 @@ php artisan serve --port=8000
 ### **Testing WhatsApp Bot:**
 1. Pastikan tunnel running: `./cloudflare-tunnel.sh 8000`
 2. Test webhook: `./test-webhook.sh`
-3. Setup webhook di Fonnte: `https://local.testingbae0000.my.id/webhook/whatsapp`
+3. Setup webhook di Fonnte: `https://local.systemwebsite.my.id/webhook/whatsapp`
 4. Test kirim pesan ke nomor WhatsApp yang terhubung
 5. Monitor logs: `tail -f storage/logs/laravel.log`
 
@@ -350,7 +350,7 @@ php artisan serve --port=8000
 | **Run tunnel** | `./cloudflare-tunnel.sh 8000` (recommended) |
 | **Test webhook** | `./test-webhook.sh` |
 | **Admin panel** | `http://localhost:8000/admin` |
-| **Webhook URL** | `https://local.testingbae0000.my.id/webhook/whatsapp` |
+| **Webhook URL** | `https://local.systemwebsite.my.id/webhook/whatsapp` |
 
 ## 📚 Dokumentasi Lengkap
 
