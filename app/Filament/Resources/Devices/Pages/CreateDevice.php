@@ -11,5 +11,14 @@ class CreateDevice extends CreateRecord
 
     protected ?string $heading = 'Tambah Perangkat';
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dasbor',
+            static::getResource()::getUrl() => static::getResource()::getNavigationLabel(),
+            static::getUrl() => $this->getHeading(),
+        ];
+    }
+
     protected string $view = 'filament.resources.devices.pages.create-device';
 }

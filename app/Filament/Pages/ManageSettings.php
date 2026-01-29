@@ -31,6 +31,14 @@ class ManageSettings extends Page implements HasForms
 
     protected static string|UnitEnum|null $navigationGroup = 'Manajemen Data';
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dasbor',
+            static::getUrl() => $this->getTitle(),
+        ];
+    }
+
     public ?array $data = [];
 
     public function mount(): void

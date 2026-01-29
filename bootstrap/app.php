@@ -7,6 +7,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -14,6 +15,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhook/whatsapp',
         ]);
+
+        // Trust all proxies for Cloudflare Tunnel
+        // This allows Laravel to properly detect HTTPS and forwarded headers
+        $middleware->trustProxies(
+            at: '*',
+            headers: Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
+                Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
+                Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
+                Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO |
+                Illuminate\Http\Request::HEADER_X_FORWARDED_AWS_ELB
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

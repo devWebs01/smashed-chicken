@@ -16,6 +16,15 @@ class OrderItems extends Page
 
     protected string $view = 'filament.resources.orders.pages.order-items';
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dasbor',
+            static::getResource()::getUrl() => static::getResource()::getNavigationLabel(),
+            static::getUrl(['record' => $this->getRecord()]) => $this->getHeading(),
+        ];
+    }
+
     public function mount(int|string $record): void
     {
         $this->record = $this->resolveRecord($record);

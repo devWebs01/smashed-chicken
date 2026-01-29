@@ -21,27 +21,46 @@ class WhatsAppWebhookService
     {
         // Handle GET requests (for verification)
         if (request()->isMethod('get')) {
+            Log::info('Handling GET verification request');
+
             return ['status' => 'ok'];
         }
 
         $webhookData = WebhookData::fromArray($data);
 
+        // Only process text messages
+        if (($data['type'] ?? 'text') !== 'text') {
+            Log::info('Ignoring non-text message', ['type' => $data['type'] ?? 'unknown', 'data' => $data]);
+
+            return ['status' => 'ignored'];
+        }
+
         // Idempotency check
         $dedupKey = $webhookData->getDedupKey();
         if (Cache::has($dedupKey)) {
+            Log::info('Ignoring duplicate message', ['dedup_key' => $dedupKey]);
+
             return ['status' => 'duplicate'];
         }
         Cache::put($dedupKey, true, config('whatsapp.cache_ttl.dedup'));
 
-        Log::info('Webhook received', $data);
+        Log::info('Processing text message', [
+            'sender' => $data['sender'] ?? null,
+            'message' => $data['message'] ?? null,
+            'device' => $data['device'] ?? null,
+        ]);
 
         if (! $webhookData->sender || ! $webhookData->devicePhone) {
+            Log::error('Missing sender or device phone in webhook data', ['data' => $data]);
+
             return ['status' => 'error', 'code' => 400];
         }
 
         // Find or sync device
         $device = $this->findOrSyncDevice($webhookData->devicePhone);
         if (! $device) {
+            Log::error('Device not found or failed to sync', ['device_phone' => $webhookData->devicePhone]);
+
             return ['status' => 'error', 'code' => 400];
         }
         $deviceToken = $device->token;
@@ -51,7 +70,7 @@ class WhatsAppWebhookService
 
             return ['status' => 'ok'];
         } catch (\Exception $e) {
-            Log::error('Error processing webhook: '.$e->getMessage());
+            Log::error('Error processing webhook: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
             $errorMessage = config('whatsapp.messages.system_error');
             $this->fonnteService->sendWhatsAppMessage($webhookData->sender, $errorMessage, $deviceToken);
 
@@ -128,7 +147,19 @@ class WhatsAppWebhookService
         }
 
         if ($this->isCommand($message, 'selesai')) {
+            $addToOrderCache = Cache::get('add_to_order_'.$phoneKey);
             Cache::forget('add_to_order_'.$phoneKey);
+
+            // If finishing add to cached order, show order review
+            if ($addToOrderCache === 'cache_order') {
+                $orderData = Cache::get('order_'.$phoneKey);
+                if ($orderData) {
+                    $this->handleConfirmOrder($webhookData, $sender, $deviceToken);
+
+                    return;
+                }
+            }
+
             $message = config('whatsapp.messages.order_complete');
             $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
 
@@ -153,13 +184,6 @@ class WhatsAppWebhookService
             return;
         }
 
-        // Check for menu keywords
-        if ($this->isMenuRequest($message)) {
-            $this->sendProductMenu($sender, $deviceToken);
-
-            return;
-        }
-
         // Handle confirmations
         if ($this->isCommand($message, 'confirm')) {
             $this->handleConfirmOrder($webhookData, $sender, $deviceToken);
@@ -177,7 +201,21 @@ class WhatsAppWebhookService
         // Check for existing order flow
         $orderCacheKey = 'order_'.$phoneKey;
         if (Cache::has($orderCacheKey)) {
+            // Handle menu request when order is pending - show menu and enable add to order mode
+            if ($this->isMenuRequest($message)) {
+                $this->handleMenuWithPendingOrder($phoneKey, $sender, $deviceToken);
+
+                return;
+            }
+            // Handle order confirmation flow for all other messages
             $this->handleConfirmOrder($webhookData, $sender, $deviceToken);
+
+            return;
+        }
+
+        // Check for menu keywords (when no pending order)
+        if ($this->isMenuRequest($message)) {
+            $this->sendProductMenu($sender, $deviceToken);
 
             return;
         }
@@ -381,20 +419,17 @@ class WhatsAppWebhookService
 
         foreach ($products as $index => $product) {
             $message .= ($index + 1).". *{$product->name}* - Rp ".number_format($product->price, 0, ',', '.')."\n";
-            if ($product->description) {
-                $message .= "   {$product->description}\n\n";
-            }
         }
 
         $message .= "----------------------------\n";
-        $message .= "*Cara Pemesanan:*\n";
-        $message .= "• Ketik nomor produk untuk pesan 1 porsi.\n";
-        $message .= "   Contoh: *1*\n";
-        $message .= "• Ketik nomor + jumlah untuk pesan lebih dari 1.\n";
-        $message .= "   Contoh: *1 3* atau *1=3* (3 porsi produk 1)\n";
-        $message .= "• Untuk pesan multiple produk, pisahkan dengan koma.\n";
+        $message .= "📝 *CARA PEMESANAN:*\n\n";
+        $message .= "• *1 produk:* Ketik nomor produk\n";
+        $message .= "   Contoh: *1* (1 porsi)\n\n";
+        $message .= "• *Jumlah lebih:* nomor=jumlah\n";
+        $message .= "   Contoh: *1=3* (3 porsi produk 1)\n\n";
+        $message .= "• *Multiple produk:* pisahkan koma\n";
         $message .= "   Contoh: *1=2, 2=1* (2 porsi produk 1 + 1 porsi produk 2)\n\n";
-        $message .= 'Ketik menu kapan saja untuk melihat daftar produk lagi.';
+        $message .= '📋 Ketik *menu* kapan saja untuk lihat menu lagi';
 
         $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
     }
@@ -439,7 +474,13 @@ class WhatsAppWebhookService
         }
 
         if ($step === 'await_delivery_method') {
-            $deliveryMethod = strtolower(trim($webhookData->message ?? ''));
+            $deliveryMethod = $webhookData->getNormalizedMessage();
+            Log::info('Delivery method received', [
+                'raw_message' => $webhookData->message,
+                'normalized' => $deliveryMethod,
+                'valid_options' => ['takeaway', 'delivery'],
+            ]);
+
             if (! in_array($deliveryMethod, ['takeaway', 'delivery'])) {
                 $message = config('whatsapp.messages.invalid_delivery');
                 $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
@@ -473,7 +514,7 @@ class WhatsAppWebhookService
         }
 
         if ($step === 'await_payment_method') {
-            $paymentMethod = strtolower(trim($webhookData->message ?? ''));
+            $paymentMethod = $webhookData->getNormalizedMessage();
             if (! in_array($paymentMethod, ['cash', 'transfer'])) {
                 $message = config('whatsapp.messages.invalid_payment');
                 $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
@@ -499,6 +540,50 @@ class WhatsAppWebhookService
     private function askPaymentMethod(string $sender, string $deviceToken): void
     {
         $message = config('whatsapp.messages.payment_prompt');
+        $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
+    }
+
+    private function handleMenuWithPendingOrder(string $phoneKey, string $sender, string $deviceToken): void
+    {
+        // Get current order data
+        $orderData = Cache::get('order_'.$phoneKey);
+
+        if (! $orderData) {
+            $this->sendProductMenu($sender, $deviceToken);
+
+            return;
+        }
+
+        // Show current order items
+        $currentItems = '';
+        foreach ($orderData['selections'] as $sel) {
+            $currentItems .= "• {$sel['product_name']} x{$sel['quantity']} - Rp ".number_format($sel['subtotal'], 0, ',', '.')."\n";
+        }
+
+        $message = "*Pesanan Anda Saat Ini:*\n{$currentItems}\n";
+        $message .= '*Total: Rp '.number_format($orderData['total'], 0, ',', '.')."*\n\n";
+
+        // Show product menu
+        $products = \App\Models\Product::all();
+        $message .= "*Menu Tambahan:*\n\n";
+
+        foreach ($products as $index => $product) {
+            $message .= ($index + 1).". *{$product->name}* - Rp ".number_format($product->price, 0, ',', '.')."\n";
+        }
+
+        $message .= "\n----------------------------\n";
+        $message .= "📝 *CARA MENAMBAH PESANAN:*\n\n";
+        $message .= "• *1 produk:* Ketik nomor produk\n";
+        $message .= "   Contoh: *1* (tambah 1 porsi)\n\n";
+        $message .= "• *Jumlah lebih:* nomor=jumlah\n";
+        $message .= "   Contoh: *1=3* (tambah 3 porsi produk 1)\n\n";
+        $message .= "• *Multiple:* *1=2, 2=1*\n\n";
+        $message .= "✅ Ketik *selesai* untuk lanjut pembayaran\n";
+        $message .= '📋 Ketik *menu* untuk lihat menu lagi';
+
+        // Enable add to order mode
+        Cache::put('add_to_order_'.$phoneKey, 'cache_order', config('whatsapp.cache_ttl.add_to_order'));
+
         $this->fonnteService->sendWhatsAppMessage($sender, $message, $deviceToken);
     }
 }

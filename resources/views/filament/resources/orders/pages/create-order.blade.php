@@ -9,6 +9,7 @@ state([
     'customer_phone' => '',
     'customer_address' => '',
     'delivery_method' => 'dine_in',
+    'payment_method' => 'cash',
 ]);
 
 rules([
@@ -16,6 +17,7 @@ rules([
     'customer_phone' => 'nullable|string|max:20',
     'customer_address' => 'nullable|string',
     'delivery_method' => 'required|string|in:dine_in,takeaway,delivery',
+    'payment_method' => 'required|string|in:cash,transfer',
 ]);
 
 $createOrder = function () {
@@ -26,7 +28,6 @@ $createOrder = function () {
             'status' => 'draft',
             'total_price' => 0,
             'order_date_time' => now(),
-            'payment_method' => '',
         ]),
     );
 
@@ -69,6 +70,17 @@ $createOrder = function () {
                                 <option value="dine_in">Makan di Tempat</option>
                                 <option value="takeaway">Bawa Pulang</option>
                                 <option value="delivery">Delivery</option>
+                            </x-filament::input.select>
+                        </x-filament::input.wrapper>
+                    </div>
+
+                    {{-- Metode Pembayaran --}}
+                    <div>
+                        <p class="mb-2 font-medium text-sm">Metode Pembayaran</p>
+                        <x-filament::input.wrapper :valid="!$errors->has('payment_method')">
+                            <x-filament::input.select id="payment_method" wire:model.defer="payment_method">
+                                <option value="cash">Tunai</option>
+                                <option value="transfer">Transfer Bank</option>
                             </x-filament::input.select>
                         </x-filament::input.wrapper>
                     </div>

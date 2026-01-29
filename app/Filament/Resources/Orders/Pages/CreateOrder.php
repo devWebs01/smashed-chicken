@@ -12,4 +12,13 @@ class CreateOrder extends CreateRecord
     protected string $view = 'filament.resources.orders.pages.create-order';
 
     protected ?string $heading = 'Buat Pesanan';
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dasbor',
+            static::getResource()::getUrl() => static::getResource()::getNavigationLabel(),
+            static::getUrl() => $this->getHeading(),
+        ];
+    }
 }

@@ -10,6 +10,14 @@ class ListDevices extends ListRecords
 {
     protected static string $resource = DeviceResource::class;
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dasbor',
+            static::getUrl() => $this->getHeading(),
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

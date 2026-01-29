@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="id" class="light" style="color-scheme: light;">
 
     <head>
         <meta charset="UTF-8" />

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -33,7 +34,13 @@ class UserForm
                             ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null) // hanya simpan kalau diisi
                             ->dehydrated(fn ($state) => filled($state)) // kalau kosong, jangan update field
                             ->required(fn (string $context): bool => $context === 'create') // wajib saat create saja
-                            ->columnSpanFull(),
+                        ,
+                        Select::make('roles')
+                            ->label('Peran')
+                            ->relationship('roles', 'name')
+                            ->multiple()
+                            ->preload()
+                            ->searchable(),
 
                     ])
                     ->columns(2)

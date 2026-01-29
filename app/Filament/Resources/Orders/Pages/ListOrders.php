@@ -8,9 +8,17 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListOrders extends ListRecords
 {
-    protected ?string $heading = 'DaftarPesanan';
+    protected ?string $heading = 'Daftar Pesanan';
 
     protected static string $resource = OrderResource::class;
+
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dasbor',
+            static::getUrl() => $this->getHeading(),
+        ];
+    }
 
     protected function getHeaderActions(): array
     {

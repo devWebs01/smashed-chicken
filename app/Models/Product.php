@@ -17,6 +17,10 @@ class Product extends Model
         'image',
     ];
 
+    protected $casts = [
+        'price' => 'decimal:2',
+    ];
+
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);

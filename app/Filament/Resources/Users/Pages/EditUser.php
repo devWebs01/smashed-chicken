@@ -12,6 +12,15 @@ class EditUser extends EditRecord
 
     protected ?string $heading = 'Ubah Pengguna';
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            url('/admin') => 'Dasbor',
+            static::getResource()::getUrl() => static::getResource()::getNavigationLabel(),
+            static::getUrl(['record' => $this->getRecord()]) => $this->getHeading(),
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [

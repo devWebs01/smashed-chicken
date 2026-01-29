@@ -20,7 +20,12 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-inbox-stack';
 
-    protected static ?string $recordTitleAttribute = 'name, description';
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'description', 'price'];
+    }
 
     protected static ?string $navigationLabel = 'Produk';
 

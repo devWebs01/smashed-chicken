@@ -1,25 +1,18 @@
-# Sistem Pemesanan Ayam Geprek via WhatsApp
+# 🍛 Geprek - Sistem Pemesanan Makanan WhatsApp
 
-Proyek ini adalah sistem pemesanan makanan berbasis WhatsApp yang dibangun dengan Laravel, Filament, dan Fonnte API. Sistem ini memungkinkan pengguna untuk melihat menu, melakukan pemesanan, dan mengelola pesanan mereka sepenuhnya melalui WhatsApp. Proyek ini juga dilengkapi dengan panel admin yang komprehensif bagi pemilik toko untuk mengelola produk, melacak pesanan, dan mengawasi operasional.
+Aplikasi pemesanan makanan berbasis WhatsApp dengan dashboard admin menggunakan Laravel dan Filament.
 
-## Fitur
+## ✨ Fitur Utama
 
-- **Bot Pemesanan WhatsApp:**
-  - **Menu Interaktif:** Pengguna dapat meminta menu produk langsung di WhatsApp.
-  - **Pemesanan Terpandu:** Proses langkah demi langkah memandu pengguna dalam memilih produk, menentukan jumlah, dan mengonfirmasi pesanan mereka.
-  - **Pendaftaran Pengguna:** Pengguna baru akan diminta untuk memberikan nama dan alamat mereka.
-  - **Sintaks Pemesanan Fleksibel:** Mendukung berbagai format untuk pemesanan (misalnya, `1`, `1 2`, `1=2, 2=1`).
-  - **Manajemen Pesanan:** Pengguna dapat menambahkan item ke pesanan sebelumnya (`tambah`), membatalkan pesanan yang tertunda (`batal`), dan mengatur ulang sesi mereka (`reset`).
-  - **Pengiriman & Pembayaran:** Mendukung metode pembayaran `takeaway` (ambil sendiri) atau `delivery` (diantar) dan `cash` (tunai) atau `transfer`.
-- **Panel Admin (Filament):**
-  - **Dasbor:** Gambaran umum penjualan, dengan grafik untuk pesanan per hari.
-  - **Manajemen Produk:** Antarmuka CRUD untuk mengelola item makanan (nama, deskripsi, harga, gambar).
-  - **Manajemen Pesanan:** Melihat dan mengelola semua pesanan yang masuk, statusnya, dan detail pelanggan.
-  - **Manajemen Perangkat:** Mengelola perangkat WhatsApp yang terhubung melalui Fonnte API.
-  - **Manajemen Pengguna:** Mengelola pengguna admin.
+- **Pemesanan WhatsApp:** Pesanan masuk langsung dari pesan WhatsApp
+- **Dashboard Admin:**
+  - Gambaran umum penjualan, dengan grafik untuk pesanan per hari
+  - Manajemen Produk (CRUD): nama, deskripsi, harga, gambar
+  - Manajemen Pesanan: melihat dan mengelola semua pesanan, status, detail pelanggan
+  - Manajemen Perangkat: mengelola perangkat WhatsApp yang terhubung melalui Fonnte API
+  - Manajemen Pengguna: mengelola pengguna admin
 - **Pengaturan Otomatis:**
-  - Satu perintah (`php artisan whatsapp:setup`) untuk menginisialisasi database dan memandu melalui pengaturan ngrok.
-  - Skrip shell (`./update_ngrok.sh`) untuk memperbarui file `.env` secara otomatis dengan URL webhook ngrok.
+  - Satu perintah (`php artisan whatsapp:setup`) untuk menginisialisasi database
 
 ## Teknologi yang Digunakan
 
@@ -27,77 +20,42 @@ Proyek ini adalah sistem pemesanan makanan berbasis WhatsApp yang dibangun denga
 - **Panel Admin:** Filament 4
 - **Frontend:** Vite, Tailwind CSS
 - **Gateway WhatsApp:** [Fonnte API](https://fonnte.com/)
-- **Database:** MySQL/MariaDB (atau DB lain yang didukung Laravel)
-- **Tunneling Pengembangan:** Ngrok
+- **Database:** SQLite (default), MySQL/MariaDB, atau DB lain yang didukung Laravel
+- **Tunneling Pengembangan:** Cloudflare Tunnel
 
-## Skema Database
+## 📁 File Penting untuk Development
 
-Tabel database utama meliputi:
-- `products`: Menyimpan semua produk yang tersedia.
-- `orders`: Merekam semua pesanan pelanggan.
-- `order_items`: Berisi produk dan jumlah spesifik untuk setiap pesanan.
-- `devices`: Menyimpan kredensial perangkat WhatsApp Fonnte.
-- `users`: Untuk akun pengguna panel admin.
-- `settings`: Untuk pengaturan umum aplikasi.
+### **Scripts:**
+- `cloudflare-tunnel.sh` - Jalankan Cloudflare Tunnel (RECOMMENDED) ⭐
+- `test-webhook.sh` - Test webhook secara otomatis
 
-### Diagram Hubungan Entitas (ERD)
+### **Laravel Commands:**
+- `php artisan whatsapp:setup` - Setup awal project
+- `php artisan serve --port=8000` - Jalankan development server
 
-```mermaid
-erDiagram
-    orders {
-        int id PK
-        string customer_name
-        string customer_phone
-        string customer_address
-        datetime order_date_time
-        string payment_method
-        enum status
-        decimal total_price
-        enum delivery_method
-    }
+## 🌐 Tunneling Options untuk Development
 
-    order_items {
-        int id PK
-        int order_id FK
-        int product_id FK
-        int quantity
-        decimal price
-        decimal subtotal
-    }
+### **Option 1: Cloudflare Tunnel (RECOMMENDED)**
 
-    products {
-        int id PK
-        string name
-        text description
-        decimal price
-        string image
-    }
+**Keuntungan:**
+- URL yang konsipien dan mudah diingat
+- Gratis dan tidak perlu autentikasi
+- Koneksi yang lebih stabil dan cepat
 
-    users {
-        int id PK
-        string name
-        string email
-    }
+**Cara Menggunakan:**
+```bash
+# 1. Di terminal pertama, jalankan Laravel
+php artisan serve --port=8000
 
-    devices {
-        int id PK
-        string name
-        string token
-        string device
-        boolean is_active
-    }
+# 2. Di terminal baru, jalankan Cloudflare Tunnel
+./cloudflare-tunnel.sh 8000
 
-    settings {
-        int id PK
-        string key
-        string value
-    }
-
-    orders ||--o{ order_items : "has"
-    products ||--o{ order_items : "is part of"
+# 3. Webhook URL: https://local.systemwebsite.my.id/webhook/whatsapp
 ```
 
-## Pengaturan Pengembangan Lokal
+📚 **[Panduan Lengkap Cloudflare Tunnel](documentation/QUICK-START-CLOUDFLARE.md)**
+
+## 🚀 Instalasi & Setup
 
 ### Prasyarat
 
@@ -105,84 +63,147 @@ erDiagram
 - Composer
 - Node.js & NPM
 - Akun [Fonnte](https://fonnte.com/)
-- [Ngrok](https://ngrok.com/) terinstal dan terautentikasi
 
 ### Langkah-langkah Instalasi
 
-1.  **Clone repositori:**
+1.  **Clone Repository:**
     ```bash
-    git clone <url-repositori>
+    git clone https://github.com/your-username/geprek.git
     cd geprek
     ```
 
-2.  **Instal dependensi:**
+2.  **Install Dependencies PHP:**
     ```bash
     composer install
+    ```
+
+3.  **Install Dependencies JavaScript:**
+    ```bash
     npm install
     ```
 
-3.  **Konfigurasi Lingkungan:**
-    - Salin file lingkungan contoh:
-      ```bash
-      cp .env.example .env
-      ```
-    - Buat kunci aplikasi:
-      ```bash
-      php artisan key:generate
-      ```
-    - Konfigurasikan koneksi database Anda di file `.env` (`DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`).
-    - Tambahkan Token Akun Fonnte Anda ke file `.env`:
-      ```
-      ACCOUNT_TOKEN=token_fonnte_anda
-      ```
+4.  **Salin File Konfigurasi:**
+    ```bash
+    cp .env.example .env
+    ```
 
-4.  **Jalankan Perintah Pengaturan Otomatis:**
-    Perintah ini akan melakukan migrasi database, mengisinya dengan data awal, dan memandu Anda melalui pengaturan ngrok jika diperlukan.
+5.  **Generate Application Key:**
+    ```bash
+    php artisan key:generate
+    ```
+
+6.  **Konfigurasi Database dan WhatsApp:**
+    Edit file `.env` dan atur:
+    ```
+    DB_CONNECTION=sqlite
+    ACCOUNT_TOKEN=your_fonnte_token
+    APP_URL=https://your-public-domain.com
+    ```
+
+7.  **Jalankan Perintah Pengaturan Otomatis:**
+    Perintah ini akan memeriksa dan membuat file database SQLite jika belum ada, melakukan migrasi database, mengisinya dengan data awal.
     ```bash
     php artisan whatsapp:setup
     ```
 
-5.  **Jalankan Layanan:**
-    - Jalankan server pengembangan Laravel:
+8.  **Setup Tunneling untuk Development:**
+    Untuk development lokal, Anda perlu mengekspos aplikasi ke internet:
+
+    - **Menggunakan Cloudflare Tunnel (RECOMMENDED):**
       ```bash
-      php artisan serve
-      ```
-    - Di terminal baru, jalankan ngrok untuk mengekspos server lokal Anda:
-      ```bash
-      ngrok http 8000
+      ./cloudflare-tunnel.sh 8000
       ```
 
-6.  **Atur URL Webhook:**
-    - Di terminal ketiga, jalankan skrip untuk memperbarui file `.env` Anda dengan URL ngrok.
-      ```bash
-      ./update_ngrok.sh
-      ```
-    - Skrip akan menampilkan URL webhook. Salin URL ini dan tempelkan ke pengaturan webhook di [Dasbor Fonnte](https://fonnte.com/device) Anda. URL akan terlihat seperti ini: `https://<subdomain-ngrok-anda>.ngrok-free.app/webhook/whatsapp`.
+    Webhook URL: `https://local.systemwebsite.my.id/webhook/whatsapp`
 
-7.  **Build Aset Frontend:**
+9.  **Set Webhook di Fonnte:**
+    - Salin URL webhook di dashboard admin atau dari output script
+    - Tempelkan ke pengaturan webhook di [Dasbor Fonnte](https://md.fonnte.com/new/device.php) Anda
+
+10. **Build Aset Frontend:**
     ```bash
-    npm run dev
+    npm run build
     ```
 
-## Penggunaan
+11. **Jalankan Aplikasi:**
+    ```bash
+    php artisan serve
+    ```
 
-### Bot WhatsApp
+## 📱 Cara Penggunaan
 
-- **Mulai percakapan:** Kirim pesan apa pun (misalnya, "halo") ke nomor WhatsApp yang terhubung dengan perangkat Fonnte Anda.
-- **Lihat menu:** Kirim "menu".
-- **Buat pesanan:** Ikuti petunjuk di layar.
-  - Contoh 1 (Pesan satu porsi produk #1): `1`
-  - Contoh 2 (Pesan tiga porsi produk #2): `2 3` atau `2=3`
-  - Contoh 3 (Pesan dua porsi produk #1 dan satu produk #3): `1=2, 3=1`
+### Untuk Pelanggan (WhatsApp)
+1. Kirim pesan ke nomor WhatsApp terdaftar
+2. Format pesan:
+   - `menu` - Menampilkan daftar menu
+   - `pesan [nama_menu] [jumlah]` - Memesan item (contoh: `pesan ayam geprek 2`)
+   - `keranjang` - Melihat keranjang pesanan
+   - `checkout` - Menyelesaikan pesanan
+   - `help` - Bantuan
 
-### Panel Admin
+### Untuk Admin (Dashboard)
+1. Login ke dashboard admin
+2. Kelola produk: tambah, edit, hapus menu
+3. Pantau pesanan masuk dan ubah status
+4. Kelola perangkat WhatsApp
+5. Lihat laporan penjualan
 
-- **URL:** `http://localhost:8000/admin`
-- **Login:** Selama pengembangan lokal, Anda dapat menggunakan fitur login pengembang.
-  - **Email:** `admin@testing.com`
-  - **Password:** `password` (atau nilai apa pun, akan diabaikan)
+## 🔧 Konfigurasi Webhook
 
-## Perintah Artisan yang Tersedia
+### Production
+- Set `APP_URL` di .env dengan domain production Anda
+- Set webhook Fonnte ke: `https://yourdomain.com/webhook/whatsapp`
 
-- `php artisan whatsapp:setup`: Perintah utama untuk pengaturan awal proyek.
-- `php artisan chain:run --name=setup`: Menjalankan rantai migrasi dan seeding (digunakan oleh perintah setup).
+### Development
+- Gunakan Cloudflare Tunnel untuk mendapatkan URL lokal yang bisa diakses dari internet
+- Set webhook Fonnte ke URL tunnel + `/webhook/whatsapp`
+
+## 📊 Monitoring
+
+### Log Error
+- Cek log Laravel: `storage/logs/laravel.log`
+- Dashboard admin akan menampilkan notifikasi untuk error webhook
+
+### Testing Webhook
+- Gunakan fitur "Test Webhook" di dashboard admin
+- Atau gunakan script: `./test-webhook.sh`
+
+## 🐛 Troubleshooting
+
+### Umum
+- **Webhook tidak terkirim:** Periksa apakah APP_URL sudah benar dan webhook di Fonnte sudah diset
+- **Gagal terhubung ke Fonnte:** Cek ulang token Fonnte di .env
+- **Database error:** Pastikan migrasi berhasil dan database SQLite terbuat
+
+### Database
+- Untuk reset database: hapus `database/database.sqlite` dan jalankan `php artisan migrate:fresh --seed`
+
+### Log Debug
+- Aktifkan debug mode di .env: `APP_DEBUG=true`
+- Cek log untuk detail error
+
+## 📚 Dokumentasi
+
+- **[Quick Start Cloudflare Tunnel](documentation/QUICK-START-CLOUDFLARE.md)** - Setup cepat dalam 3 langkah ⭐
+- **[Panduan Lengkap Cloudflare Tunnel](documentation/CLOUDFLARE-TUNNEL-SETUP.md)** - Instalasi, konfigurasi, troubleshooting
+- **[API Documentation](documentation/)** - Coming soon
+
+## 💡 Tips Praktis
+
+1. Selalu gunakan Cloudflare Tunnel untuk development lokal
+2. Test webhook setelah mengganti konfigurasi
+3. Backup database secara teratur
+4. Monitor log error secara berkala
+5. Update package Laravel dan dependensi secara teratur
+
+## 🤝 Kontribusi
+
+Contributions welcome! Please feel free to submit a Pull Request.
+
+## 📄 Lisensi
+
+MIT License
+
+---
+
+Built with ❤️ using Laravel

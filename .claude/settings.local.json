@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(php artisan route:list:*)",
+      "Bash(composer update:*)",
+      "Bash(php artisan tinker:*)",
+      "Bash(php artisan db:seed:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(php:*)"
+    ]
+  }
+}
