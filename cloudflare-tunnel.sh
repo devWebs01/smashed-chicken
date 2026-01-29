@@ -2,7 +2,7 @@
 
 # Script untuk menjalankan Cloudflare Tunnel
 # Domain static untuk project ini
-TUNNEL_DOMAIN="local.testingbae0000.my.id"
+TUNNEL_DOMAIN="local.systemwebsite.my.id"
 
 # Warna untuk output
 GREEN='\033[0;32m'

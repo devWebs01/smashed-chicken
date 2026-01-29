@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ShieldSeeder::class,
             ProductSeeder::class,
             SettingSeeder::class,
+            DeviceSeeder::class,
         ]);
 
         $superAdminRole = Role::firstOrCreate([

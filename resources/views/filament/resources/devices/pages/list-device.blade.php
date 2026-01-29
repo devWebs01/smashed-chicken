@@ -282,10 +282,10 @@ $copyToClipboard = action(function (string $token) {
 
 $testWebhook = action(function () {
     $fonnteService = app(FonnteService::class);
-    $webhookUrl = env('NGROK_WEBHOOK_URL');
+    $webhookUrl = env('APP_URL');
 
     if (!$webhookUrl) {
-        Notification::make()->title('❌ Webhook URL Tidak Dikonfigurasi')->body('Set NGROK_WEBHOOK_URL di file .env terlebih dahulu.')->danger()->send();
+        Notification::make()->title('❌ Webhook URL Tidak Dikonfigurasi')->body('Set APP_URL di file .env terlebih dahulu.')->danger()->send();
         return;
     }
 
@@ -445,7 +445,7 @@ $testWebhook = action(function () {
                     <div>
                         <p class="text-sm font-medium text-gray-700">Webhook URL</p>
                         <p class="text-sm text-gray-600 break-all">
-                            {{ env('NGROK_WEBHOOK_URL') ? env('NGROK_WEBHOOK_URL') . '/webhook/whatsapp' : 'Belum dikonfigurasi' }}
+                            {{ env('APP_URL') ? env('APP_URL') . '/webhook/whatsapp' : 'Belum dikonfigurasi' }}
                         </p>
                     </div>
                     <div>
@@ -457,15 +457,17 @@ $testWebhook = action(function () {
                     </div>
                 </div>
 
-                {{-- Test Webhook Button --}}
-                <div class="mt-4 flex gap-3">
+                {{-- Action Buttons --}}
+                <div class="mt-4 flex flex-wrap gap-3">
+
+                    {{-- Test Webhook Button --}}
                     <x-filament::button wire:click="$dispatch('test-webhook')" size="sm" color="gray" outlined>
                         <x-heroicon-o-paper-airplane class="w-4 h-4 mr-2" />
                         Test Webhook
                     </x-filament::button>
 
-                    @if (env('NGROK_WEBHOOK_URL'))
-                        <a href="{{ env('NGROK_WEBHOOK_URL') }}/webhook/whatsapp"
+                    @if (env('APP_URL'))
+                        <a href="{{ env('APP_URL') }}/webhook/whatsapp"
                             class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                             <x-heroicon-o-globe-alt class="w-4 h-4 mr-2" />
                             Open Webhook URL
@@ -596,11 +598,11 @@ $testWebhook = action(function () {
                                                         Hubungkan
                                                     </x-filament::dropdown.list.item>
                                                 @endif
-                                                {{-- <x-filament::dropdown.list.item
+                                                <x-filament::dropdown.list.item
                                                     wire:click="requestDeleteOtp('{{ $device['token'] }}')"
                                                     size="xs">
                                                     Hapus
-                                                </x-filament::dropdown.list.item> --}}
+                                                </x-filament::dropdown.list.item>
                                             </x-filament::dropdown.list>
                                         </x-filament::dropdown>
 

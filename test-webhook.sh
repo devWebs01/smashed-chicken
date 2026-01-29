@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 # URL webhook (bisa dari env atau parameter)
 if [ $# -eq 0 ]; then
-    WEBHOOK_URL="https://local.testingbae0000.my.id/webhook/whatsapp"
+    WEBHOOK_URL="https://local.systemwebsite.my.id/webhook/whatsapp"
 else
     WEBHOOK_URL=$1
 fi
@@ -58,11 +58,11 @@ echo ""
 # Test 3: POST Request dengan simulasi webhook Fonnte
 echo -e "${YELLOW}Test 3: POST Request (Simulasi Webhook Fonnte)${NC}"
 TEST_DATA='{
-  "device": "6281234567890",
-  "sender": "6281234567890",
+  "device": "6285951572182",
+  "sender": "628978301766",
   "message": "menu",
   "member": {
-    "jid": "6281234567890@s.whatsapp.net",
+    "jid": "628978301766@s.whatsapp.net",
     "name": "Test User"
   }
 }'
