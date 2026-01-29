@@ -21,6 +21,8 @@ class WhatsAppWebhookService
     {
         // Handle GET requests (for verification)
         if (request()->isMethod('get')) {
+            Log::info('Handling GET verification request');
+
             return ['status' => 'ok'];
         }
 
@@ -28,7 +30,7 @@ class WhatsAppWebhookService
 
         // Only process text messages
         if (($data['type'] ?? 'text') !== 'text') {
-            Log::info('Ignoring non-text message', ['type' => $data['type'] ?? 'unknown']);
+            Log::info('Ignoring non-text message', ['type' => $data['type'] ?? 'unknown', 'data' => $data]);
 
             return ['status' => 'ignored'];
         }
@@ -36,6 +38,8 @@ class WhatsAppWebhookService
         // Idempotency check
         $dedupKey = $webhookData->getDedupKey();
         if (Cache::has($dedupKey)) {
+            Log::info('Ignoring duplicate message', ['dedup_key' => $dedupKey]);
+
             return ['status' => 'duplicate'];
         }
         Cache::put($dedupKey, true, config('whatsapp.cache_ttl.dedup'));
@@ -47,12 +51,16 @@ class WhatsAppWebhookService
         ]);
 
         if (! $webhookData->sender || ! $webhookData->devicePhone) {
+            Log::error('Missing sender or device phone in webhook data', ['data' => $data]);
+
             return ['status' => 'error', 'code' => 400];
         }
 
         // Find or sync device
         $device = $this->findOrSyncDevice($webhookData->devicePhone);
         if (! $device) {
+            Log::error('Device not found or failed to sync', ['device_phone' => $webhookData->devicePhone]);
+
             return ['status' => 'error', 'code' => 400];
         }
         $deviceToken = $device->token;
@@ -62,7 +70,7 @@ class WhatsAppWebhookService
 
             return ['status' => 'ok'];
         } catch (\Exception $e) {
-            Log::error('Error processing webhook: '.$e->getMessage());
+            Log::error('Error processing webhook: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
             $errorMessage = config('whatsapp.messages.system_error');
             $this->fonnteService->sendWhatsAppMessage($webhookData->sender, $errorMessage, $deviceToken);
 
@@ -411,7 +419,6 @@ class WhatsAppWebhookService
 
         foreach ($products as $index => $product) {
             $message .= ($index + 1).". *{$product->name}* - Rp ".number_format($product->price, 0, ',', '.')."\n";
-
         }
 
         $message .= "----------------------------\n";
