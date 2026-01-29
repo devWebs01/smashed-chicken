@@ -20,6 +20,8 @@ fi
 echo -e "${BLUE}🧪 Testing Webhook${NC}"
 echo -e "${BLUE}📡 URL: $WEBHOOK_URL${NC}"
 echo ""
+php artisan cache:clear
+echo ""
 
 # Test 1: GET Request
 echo -e "${YELLOW}Test 1: GET Request${NC}"
