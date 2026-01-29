@@ -282,10 +282,10 @@ $copyToClipboard = action(function (string $token) {
 
 $testWebhook = action(function () {
     $fonnteService = app(FonnteService::class);
-    $webhookUrl = env('NGROK_WEBHOOK_URL');
+    $webhookUrl = env('APP_URL');
 
     if (!$webhookUrl) {
-        Notification::make()->title('❌ Webhook URL Tidak Dikonfigurasi')->body('Set NGROK_WEBHOOK_URL di file .env terlebih dahulu.')->danger()->send();
+        Notification::make()->title('❌ Webhook URL Tidak Dikonfigurasi')->body('Set APP_URL di file .env terlebih dahulu.')->danger()->send();
         return;
     }
 
@@ -323,41 +323,6 @@ $testWebhook = action(function () {
             ->body('Error: ' . $e->getMessage())
             ->danger()
             ->send();
-    }
-});
-
-// Sync devices action
-$syncDevices = action(function () {
-    try {
-        // Make AJAX request to sync endpoint using full URL
-        $url = url('/api/devices/sync');
-        $response = \Illuminate\Support\Facades\Http::timeout(30)
-            ->withHeaders([
-                'X-Requested-With' => 'XMLHttpRequest',
-                'Accept' => 'application/json',
-            ])
-            ->post($url);
-        $data = $response->json();
-
-        if ($data['success']) {
-            $message = "Sinkronisasi berhasil! {$data['data']['synced_count']} device dari {$data['data']['total_devices']} berhasil disinkronkan.";
-
-            if (!empty($data['data']['errors'])) {
-                $errorMessages = collect($data['data']['errors'])->map(fn($error) =>
-                    "{$error['device']}: {$error['error']}"
-                )->join("\n");
-                $message .= "\n\nBeberapa device mengalami error:\n{$errorMessages}";
-            }
-
-            Notification::make()->title('✅ Sinkronisasi Berhasil')->body($message)->success()->send();
-        } else {
-            Notification::make()->title('❌ Sinkronisasi Gagal')->body('Gagal sinkronisasi: ' . $data['message'])->danger()->send();
-        }
-
-        // Reload devices after sync
-        $this->reloadDevices(app(FonnteService::class));
-    } catch (\Exception $e) {
-        Notification::make()->title('❌ Error Sinkronisasi')->body('Terjadi error: ' . $e->getMessage())->danger()->send();
     }
 });
 
@@ -480,7 +445,7 @@ $syncDevices = action(function () {
                     <div>
                         <p class="text-sm font-medium text-gray-700">Webhook URL</p>
                         <p class="text-sm text-gray-600 break-all">
-                            {{ env('NGROK_WEBHOOK_URL') ? env('NGROK_WEBHOOK_URL') . '/webhook/whatsapp' : 'Belum dikonfigurasi' }}
+                            {{ env('APP_URL') ? env('APP_URL') . '/webhook/whatsapp' : 'Belum dikonfigurasi' }}
                         </p>
                     </div>
                     <div>
@@ -494,11 +459,6 @@ $syncDevices = action(function () {
 
                 {{-- Action Buttons --}}
                 <div class="mt-4 flex flex-wrap gap-3">
-                    {{-- Sync Button --}}
-                    <x-filament::button wire:click="syncDevices" size="sm" color="primary">
-                        <x-heroicon-o-arrow-path class="w-4 h-4 mr-2" />
-                        Sinkronkan Data
-                    </x-filament::button>
 
                     {{-- Test Webhook Button --}}
                     <x-filament::button wire:click="$dispatch('test-webhook')" size="sm" color="gray" outlined>
@@ -506,8 +466,8 @@ $syncDevices = action(function () {
                         Test Webhook
                     </x-filament::button>
 
-                    @if (env('NGROK_WEBHOOK_URL'))
-                        <a href="{{ env('NGROK_WEBHOOK_URL') }}/webhook/whatsapp"
+                    @if (env('APP_URL'))
+                        <a href="{{ env('APP_URL') }}/webhook/whatsapp"
                             class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                             <x-heroicon-o-globe-alt class="w-4 h-4 mr-2" />
                             Open Webhook URL
@@ -638,11 +598,11 @@ $syncDevices = action(function () {
                                                         Hubungkan
                                                     </x-filament::dropdown.list.item>
                                                 @endif
-                                                {{-- <x-filament::dropdown.list.item
+                                                <x-filament::dropdown.list.item
                                                     wire:click="requestDeleteOtp('{{ $device['token'] }}')"
                                                     size="xs">
                                                     Hapus
-                                                </x-filament::dropdown.list.item> --}}
+                                                </x-filament::dropdown.list.item>
                                             </x-filament::dropdown.list>
                                         </x-filament::dropdown>
 

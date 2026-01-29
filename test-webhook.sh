@@ -58,11 +58,11 @@ echo ""
 # Test 3: POST Request dengan simulasi webhook Fonnte
 echo -e "${YELLOW}Test 3: POST Request (Simulasi Webhook Fonnte)${NC}"
 TEST_DATA='{
-  "device": "6281234567890",
-  "sender": "6281234567890",
+  "device": "6285951572182",
+  "sender": "628978301766",
   "message": "menu",
   "member": {
-    "jid": "6281234567890@s.whatsapp.net",
+    "jid": "628978301766@s.whatsapp.net",
     "name": "Test User"
   }
 }'
