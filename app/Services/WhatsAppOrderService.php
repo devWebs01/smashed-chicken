@@ -22,11 +22,11 @@ class WhatsAppOrderService
     public function processSelections(array $selections, WebhookData $webhookData, string $phoneNumber, string $deviceToken): void
     {
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        $addToOrderId = Cache::get('add_to_order_'.$phoneKey);
+        $addToOrderId = Cache::get('add_to_order_' . $phoneKey);
 
         if ($addToOrderId) {
             $this->addToExistingOrder($phoneNumber, $deviceToken, $selections, $addToOrderId);
-            Cache::forget('add_to_order_'.$phoneKey);
+            Cache::forget('add_to_order_' . $phoneKey);
 
             return;
         }
@@ -66,23 +66,26 @@ class WhatsAppOrderService
 
         $itemsText = '';
         foreach ($validSelections as $sel) {
-            $itemsText .= "*{$sel['product_name']}* - {$sel['quantity']} porsi - Rp ".number_format($sel['subtotal'], 0, ',', '.')."\n";
+            $itemsText .= "*{$sel['product_name']}* - {$sel['quantity']} porsi - Rp " . number_format($sel['subtotal'], 0, ',', '.') . "\n";
             $total += $sel['subtotal'];
         }
 
         $reviewMessage = str_replace(['{items}', '{total}'], [$itemsText, number_format($total, 0, ',', '.')], $reviewMessage);
 
-        // Store selections in cache
-        $customerName = Cache::get('customer_name_'.$phoneKey, 'Customer');
-        Cache::put('order_'.$phoneKey, [
+        // Store selections in cache with CORRECT initial step
+        $customerName = Cache::get('customer_name_' . $phoneKey, 'Customer');
+        Cache::put('order_' . $phoneKey, [
             'selections' => $validSelections,
             'total' => $total,
             'customer_name' => $customerName,
-            'step' => 'await_confirmation',
+            'step' => 'await_delivery_method',  // FIXED: Set correct step immediately
             'created_at' => now()->timestamp,
         ], config('whatsapp.cache_ttl.order'));
 
-        $this->fonnteService->sendWhatsAppMessage($phoneNumber, $reviewMessage, $deviceToken);
+        // Send review + delivery prompt IMMEDIATELY (no race condition!)
+        $deliveryPrompt = config('whatsapp.messages.delivery_prompt');
+        $combinedMessage = $reviewMessage . "\n\n" . $deliveryPrompt;
+        $this->fonnteService->sendWhatsAppMessage($phoneNumber, $combinedMessage, $deviceToken);
     }
 
     /**
@@ -95,7 +98,7 @@ class WhatsAppOrderService
         // Check timeout
         $createdAt = $orderData['created_at'] ?? now()->timestamp;
         if (now()->timestamp - $createdAt > config('whatsapp.cache_ttl.order')) {
-            Cache::forget('order_'.$phoneKey);
+            Cache::forget('order_' . $phoneKey);
 
             return ['status' => 'expired', 'message' => config('whatsapp.messages.order_expired')];
         }
@@ -104,7 +107,7 @@ class WhatsAppOrderService
 
         if ($step === 'await_confirmation') {
             $orderData['step'] = 'await_delivery_method';
-            Cache::put('order_'.$phoneKey, $orderData, config('whatsapp.cache_ttl.order'));
+            Cache::put('order_' . $phoneKey, $orderData, config('whatsapp.cache_ttl.order'));
 
             return ['status' => 'await_delivery', 'message' => config('whatsapp.messages.delivery_prompt')];
         }
@@ -142,7 +145,7 @@ class WhatsAppOrderService
                 $device = \App\Models\Device::where('token', $deviceToken)->first();
 
                 // Create order
-                $customerAddress = $orderData['customer_address'] ?? Cache::get('customer_address_'.$phoneKey);
+                $customerAddress = $orderData['customer_address'] ?? Cache::get('customer_address_' . $phoneKey);
                 $order = Order::create([
                     'customer_name' => $orderData['customer_name'],
                     'customer_phone' => $phoneKey,
@@ -168,12 +171,11 @@ class WhatsAppOrderService
             });
 
             // Clear cache
-            Cache::forget('order_'.$phoneKey);
+            Cache::forget('order_' . $phoneKey);
 
             return ['status' => 'success', 'message' => 'Order created successfully'];
-
         } catch (\Exception $e) {
-            Log::error('Failed to finalize order: '.$e->getMessage());
+            Log::error('Failed to finalize order: ' . $e->getMessage());
 
             return ['status' => 'error', 'message' => config('whatsapp.messages.order_error')];
         }
@@ -229,7 +231,7 @@ class WhatsAppOrderService
 
         // Set flag for auto-add next messages
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        Cache::put('add_to_order_'.$phoneKey, $order->id, config('whatsapp.cache_ttl.add_to_order'));
+        Cache::put('add_to_order_' . $phoneKey, $order->id, config('whatsapp.cache_ttl.add_to_order'));
 
         $message = str_replace(
             ['{id}', '{items}', '{total}'],
@@ -245,7 +247,7 @@ class WhatsAppOrderService
     public function cancelOrder(string $phoneNumber, string $deviceToken): void
     {
         $phoneKey = $this->canonicalPhone($phoneNumber);
-        $orderData = Cache::get('order_'.$phoneKey);
+        $orderData = Cache::get('order_' . $phoneKey);
 
         if (! $orderData) {
             $message = config('whatsapp.messages.no_pending_order');
@@ -254,7 +256,7 @@ class WhatsAppOrderService
             return;
         }
 
-        Cache::forget('order_'.$phoneKey);
+        Cache::forget('order_' . $phoneKey);
         $message = config('whatsapp.messages.order_cancelled');
         $this->fonnteService->sendWhatsAppMessage($phoneNumber, $message, $deviceToken);
     }
@@ -291,7 +293,7 @@ class WhatsAppOrderService
     {
         $p = preg_replace('/[^0-9]/', '', $raw);
         if (str_starts_with($p, '0')) {
-            $p = '62'.substr($p, 1);
+            $p = '62' . substr($p, 1);
         }
 
         return $p;
