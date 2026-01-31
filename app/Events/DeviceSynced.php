@@ -8,7 +8,8 @@ use Illuminate\Queue\SerializesModels;
 
 class DeviceSynced
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
     public function __construct(
         public Device $device

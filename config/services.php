@@ -29,10 +29,16 @@ return [
     ],
 
     'slack' => [
+        // Laravel's default Slack notification channel
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+        // Custom webhook for SlackNotificationService (Phase 3: Optional Enhancements)
+        'webhook_url' => env('SLACK_WEBHOOK_URL'),
+        'channel' => env('SLACK_CHANNEL'),
+        'username' => env('SLACK_USERNAME', 'Geprek Bot'),
+        'icon' => env('SLACK_ICON', ':robot_face:'),
     ],
 
 ];

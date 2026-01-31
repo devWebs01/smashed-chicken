@@ -8,9 +8,8 @@ if (! function_exists('formatRupiah')) {
      *
      * @param  int|float  $angka
      * @param  bool  $withPrefix  Sertakan "Rp" di depan
-     * @return string
      */
-    function formatRupiah($angka, $withPrefix = true)
+    function formatRupiah($angka, $withPrefix = true): string
     {
         $hasil = number_format($angka, 0, ',', '.');
 

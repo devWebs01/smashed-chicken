@@ -13,15 +13,15 @@ class ProductController extends BaseApiController
      */
     public function index(Request $request): JsonResponse
     {
-        $products = Product::query()
-            ->when($request->search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+        $lengthAwarePaginator = Product::query()
+            ->when($request->search, function ($query, $search): void {
+                $query->where('name', 'like', sprintf('%%%s%%', $search))
+                    ->orWhere('description', 'like', sprintf('%%%s%%', $search));
             })
-            ->when($request->sort_by, function ($query, $sortBy) {
+            ->when($request->sort_by, function ($query, $sortBy): void {
                 $direction = $request->get('sort_direction', 'asc');
                 $query->orderBy($sortBy, $direction);
-            }, function ($query) {
+            }, function ($query): void {
                 $query->orderBy('name', 'asc');
             })
             ->paginate($request->get('per_page', 15));
@@ -30,13 +30,13 @@ class ProductController extends BaseApiController
             'success' => true,
             'message' => 'Products retrieved successfully',
             'data' => [
-                'products' => $products->items(),
+                'products' => $lengthAwarePaginator->items(),
                 'pagination' => [
-                    'current_page' => $products->currentPage(),
-                    'per_page' => $products->perPage(),
-                    'total' => $products->total(),
-                    'last_page' => $products->lastPage(),
-                    'has_more' => $products->hasMorePages(),
+                    'current_page' => $lengthAwarePaginator->currentPage(),
+                    'per_page' => $lengthAwarePaginator->perPage(),
+                    'total' => $lengthAwarePaginator->total(),
+                    'last_page' => $lengthAwarePaginator->lastPage(),
+                    'has_more' => $lengthAwarePaginator->hasMorePages(),
                 ],
             ],
         ]);

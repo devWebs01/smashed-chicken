@@ -8,7 +8,13 @@
       "Bash(php artisan db:seed:*)",
       "Bash(curl:*)",
       "Bash(python3:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(chmod:*)",
+      "Bash(powershell:*)",
+      "Bash(cmd:*)",
+      "Bash(composer require:*)",
+      "Bash(sqlite3:*)",
+      "WebSearch"
     ]
   }
 }
