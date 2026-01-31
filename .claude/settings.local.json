@@ -14,7 +14,9 @@
       "Bash(cmd:*)",
       "Bash(composer require:*)",
       "Bash(sqlite3:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)"
     ]
   }
 }
