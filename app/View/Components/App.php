@@ -24,6 +24,6 @@ class App extends Component
     {
         $setting = Setting::first();
 
-        return view('livewire.layouts.app', compact('setting'));
+        return view('livewire.layouts.app', ['setting' => $setting]);
     }
 }

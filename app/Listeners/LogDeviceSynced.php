@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Log;
 
 class LogDeviceSynced
 {
-    public function handle(DeviceSynced $event): void
+    public function handle(DeviceSynced $deviceSynced): void
     {
         Log::info('Device auto-synced successfully', [
-            'device_id' => $event->device->id,
-            'device_phone' => $event->device->device,
-            'device_name' => $event->device->name,
+            'device_id' => $deviceSynced->device->id,
+            'device_phone' => $deviceSynced->device->device,
+            'device_name' => $deviceSynced->device->name,
         ]);
     }
 }

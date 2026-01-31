@@ -23,7 +23,7 @@ class SetupWhatsAppProject extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $this->info('🚀 Starting WhatsApp Project Setup...');
 
@@ -41,7 +41,7 @@ class SetupWhatsAppProject extends Command
         $this->info('🎉 Setup completed! Follow the instructions above to complete setup.');
     }
 
-    private function setupDatabase()
+    private function setupDatabase(): void
     {
         $dbConnection = env('DB_CONNECTION');
         if ($dbConnection === 'sqlite') {
@@ -56,7 +56,7 @@ class SetupWhatsAppProject extends Command
         }
     }
 
-    private function showSetupInstructions()
+    private function showSetupInstructions(): void
     {
         $this->info("\n📋 Next Steps:");
         $this->line('1. Start Laravel: php artisan serve');
