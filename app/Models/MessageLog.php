@@ -10,6 +10,11 @@ class MessageLog extends Model
     use HasFactory;
 
     /**
+     * Disable timestamps for log tables (logs are immutable).
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

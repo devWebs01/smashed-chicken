@@ -21,7 +21,7 @@ return [
     ],
 
     'messages' => [
-        'welcome' => "Selamat datang! Silakan perkenalkan diri Anda.\n\nKetik nama lengkap Anda:",
+        'welcome' => "Selamat datang di layanan pemesanan Ayam Geprek Kami! 🍗\n\nUntuk melakukan pemesanan, silakan ikuti panduan yang akan diberikan bot.\n\nMari kita mulai dengan perkenalan. Silakan ketik nama lengkap Anda:",
         'name_empty' => 'Nama tidak boleh kosong. Silakan ketik nama lengkap Anda:',
         'address_prompt' => "Terima kasih, {name}!\n\nSilakan kirim alamat lengkap Anda untuk pengiriman (jika diperlukan):",
         'info_complete' => "Terima kasih! Data Anda telah tersimpan.\n\nSekarang Anda bisa mulai memesan.\nKetik *menu* untuk melihat daftar produk.",
