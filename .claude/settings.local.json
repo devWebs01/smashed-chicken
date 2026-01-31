@@ -16,7 +16,9 @@
       "Bash(sqlite3:*)",
       "WebSearch",
       "Bash(git remote add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(./scripts_test/rector/rector-check.sh:*)"
     ]
   }
 }
