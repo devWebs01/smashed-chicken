@@ -39,9 +39,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->brandName(
-                cache()->remember('app.setting.name', now()->addDay(), function () {
-                    return Setting::first()?->name ?? 'Geprek';
-                })
+                cache()->remember('app.setting.name', now()->addDay(), fn () => Setting::first()?->name ?? 'Geprek')
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

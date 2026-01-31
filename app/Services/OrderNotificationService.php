@@ -7,12 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class OrderNotificationService
 {
-    protected $fonnteService;
-
-    public function __construct(FonnteService $fonnteService)
-    {
-        $this->fonnteService = $fonnteService;
-    }
+    public function __construct(protected \App\Services\FonnteService $fonnteService) {}
 
     /**
      * Send notification for new order
@@ -46,7 +41,7 @@ class OrderNotificationService
 
         // Get message template for new order
         $message = $this->getNewOrderMessage($order);
-        if (! $message) {
+        if ($message === '' || $message === '0') {
             Log::info('No notification message for new order', [
                 'order_id' => $order->id,
             ]);
@@ -59,10 +54,10 @@ class OrderNotificationService
             Log::info('New order notification sent', [
                 'order_id' => $order->id,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             Log::error('Failed to send new order notification', [
                 'order_id' => $order->id,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
         }
     }
@@ -105,7 +100,7 @@ class OrderNotificationService
         }
 
         // Get message template for status change
-        $message = $this->getStatusChangeMessage($order, $oldStatus, $newStatus);
+        $message = $this->getStatusChangeMessage($order, $newStatus);
         if (! $message) {
             Log::info('No notification message for status change', [
                 'order_id' => $order->id,
@@ -121,11 +116,11 @@ class OrderNotificationService
                 'order_id' => $order->id,
                 'status_change' => $oldStatus.' -> '.$newStatus,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception $exception) {
             Log::error('Failed to send order status notification', [
                 'order_id' => $order->id,
                 'status_change' => $oldStatus.' -> '.$newStatus,
-                'error' => $e->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
         }
     }
@@ -133,7 +128,7 @@ class OrderNotificationService
     /**
      * Get message template for new order
      */
-    private function getNewOrderMessage(Order $order): ?string
+    private function getNewOrderMessage(Order $order): string
     {
         $template = config('whatsapp.messages.new_order',
             "🛒 *Pesanan Baru #%s*\n\n".
@@ -148,7 +143,7 @@ class OrderNotificationService
         // Build order items text
         $itemsText = '';
         foreach ($order->orderItems as $item) {
-            $itemsText .= "• {$item->product->name} x{$item->quantity}\n";
+            $itemsText .= sprintf('• %s x%s%s', $item->product->name, $item->quantity, PHP_EOL);
         }
 
         // Format message
@@ -168,7 +163,7 @@ class OrderNotificationService
     /**
      * Get message template for status change
      */
-    private function getStatusChangeMessage(Order $order, string $oldStatus, string $newStatus): ?string
+    private function getStatusChangeMessage(Order $order, string $newStatus): ?string
     {
         $templateKey = 'status_'.$newStatus;
 
@@ -186,7 +181,7 @@ class OrderNotificationService
         // Build order items text
         $itemsText = '';
         foreach ($order->orderItems as $item) {
-            $itemsText .= "• {$item->product->name} x{$item->quantity}\n";
+            $itemsText .= sprintf('• %s x%s%s', $item->product->name, $item->quantity, PHP_EOL);
         }
 
         // Replace placeholders

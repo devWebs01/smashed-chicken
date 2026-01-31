@@ -7,7 +7,8 @@ use Illuminate\Queue\SerializesModels;
 
 class DeviceNotFound
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
     public function __construct(
         public string $devicePhone

@@ -4,21 +4,11 @@ namespace App\Observers;
 
 use App\Models\Device;
 use App\Models\Order;
-use App\Services\FonnteService;
-use App\Services\OrderNotificationService;
 use Illuminate\Support\Facades\Log;
 
 class OrderObserver
 {
-    protected $fonnteService;
-
-    protected $notificationService;
-
-    public function __construct(FonnteService $fonnteService, OrderNotificationService $notificationService)
-    {
-        $this->fonnteService = $fonnteService;
-        $this->notificationService = $notificationService;
-    }
+    public function __construct(protected \App\Services\FonnteService $fonnteService, protected \App\Services\OrderNotificationService $notificationService) {}
 
     /**
      * Handle the Order "created" event.
@@ -29,7 +19,7 @@ class OrderObserver
         $this->sendOrderConfirmation($order);
     }
 
-    private function sendOrderConfirmation(Order $order)
+    private function sendOrderConfirmation(Order $order): void
     {
         // Load order items with products and device
         $order->load('orderItems.product', 'device');
@@ -47,11 +37,16 @@ class OrderObserver
         foreach ($order->orderItems as $item) {
             $confirmationMessage .= "*{$item->product->name}* - {$item->quantity} porsi\n";
         }
-        $confirmationMessage .= "\nPengiriman: {$order->delivery_method}";
+
+        $confirmationMessage .= '
+Pengiriman: '.$order->delivery_method;
         if ($order->customer_address) {
-            $confirmationMessage .= "\nAlamat: {$order->customer_address}";
+            $confirmationMessage .= '
+Alamat: '.$order->customer_address;
         }
-        $confirmationMessage .= "\nPembayaran: {$order->payment_method}";
+
+        $confirmationMessage .= '
+Pembayaran: '.$order->payment_method;
         $confirmationMessage .= "\n*Total: Rp ".number_format($order->total_price, 0, ',', '.')."*\n\n";
         $confirmationMessage .= "Terima kasih telah memesan!\n";
         $confirmationMessage .= 'Pesanan Anda sedang diproses.';
@@ -59,8 +54,8 @@ class OrderObserver
         try {
             $this->fonnteService->sendWhatsAppMessage($order->customer_phone, $confirmationMessage, $device->token);
             Log::info('Order confirmation sent', ['order_id' => $order->id]);
-        } catch (\Exception $e) {
-            Log::error('Failed to send order confirmation', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+        } catch (\Exception $exception) {
+            Log::error('Failed to send order confirmation', ['order_id' => $order->id, 'error' => $exception->getMessage()]);
         }
     }
 
